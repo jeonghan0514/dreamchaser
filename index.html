@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 追夢之旅 Dream Trip ✨</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome setIcon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+    <div id="app" class="max-w-md mx-auto p-4 pb-24">
+        <!-- 頂部標題 -->
+        <header class="text-center py-6">
+            <h1 class="text-2xl font-bold text-pink-600 flex items-center justify-center gap-2">
+                <span>✨</span> 追夢之旅 Dream Trip <span>💎</span>
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">演唱會花費記帳 & 行李清單</p>
+        </header>
+
+        <!-- 導覽頁籤 -->
+        <div class="flex bg-white rounded-xl shadow-sm p-1 mb-6 border border-slate-100">
+            <button @click="currentTab = 'expense'" 
+                :class="currentTab === 'expense' ? 'bg-pink-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'"
+                class="flex-1 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wallet"></i> 花費記帳
+            </button>
+            <button @click="currentTab = 'checklist'" 
+                :class="currentTab === 'checklist' ? 'bg-pink-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'"
+                class="flex-1 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-suitcase"></i> 行李清單
+            </button>
+        </div>
+
+        <!-- 畫面 A：花費記帳 -->
+        <div v-show="currentTab === 'expense'" class="space-y-6">
+            <!-- 總金額卡片 -->
+            <div class="bg-gradient-to-r from-pink-500 to-rose-400 rounded-2xl p-5 text-white shadow-lg">
+                <div class="text-sm opacity-90">總花費台幣</div>
+                <div class="text-3xl font-extrabold mt-1">NT$ {{ totalTwd.toLocaleString() }}</div>
+                <div class="mt-4 pt-3 border-t border-white/20 flex justify-between text-xs opacity-90">
+                    <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
+                    <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
+                    <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
+                </div>
+            </div>
+
+            <!-- 新增花費表單 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+                <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-pink-500"></i> 新增一筆花費
+                </h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                        <option value="追隨✨">追隨✨</option>
+                        <option value="吃吃🍡">吃吃🍡</option>
+                        <option value="住宿🏨">住宿🏨</option>
+                        <option value="交通🚗">交通🚗</option>
+                        <option value="剁手🎀">剁手🎀</option>
+                        <option value="其他🔍">其他🔍</option>
+                    </select>
+                </div>
+                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                </div>
+                <button @click="addExpense" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-2.5 rounded-lg text-sm shadow-md transition-all">
+                    新增花費
+                </button>
+            </div>
+
+            <!-- 花費列表 -->
+            <div class="space-y-2">
+                <h2 class="font-bold text-slate-700 text-sm px-1">花費明細</h2>
+                <div v-if="expenses.length === 0" class="text-center py-8 text-slate-400 text-sm bg-white rounded-2xl border border-slate-100">
+                    目前還沒有記帳資料唷！趕快新增第一筆吧 ✨
+                </div>
+                <div v-for="(item, index) in expenses" :key="index" class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 bg-pink-50 text-pink-600 rounded-full font-medium">{{ item.category }}</span>
+                            <span class="text-xs text-slate-400">{{ item.date }}</span>
+                        </div>
+                        <div class="font-medium text-slate-800 mt-1 text-sm">{{ item.content }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-pink-600 text-sm">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
+                        <div v-if="item.foreignAmt" class="text-xs text-slate-400">外幣: {{ item.foreignAmt }}</div>
+                        <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 畫面 B：行李清單 -->
+        <div v-show="currentTab === 'checklist'" class="space-y-4">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-slate-700 text-sm">行李準備進度</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center text-pink-500 font-bold text-sm">
+                    {{ Math.round((checkedCount / (totalChecklistCount || 1)) * 100) }}%
+                </div>
+            </div>
+
+            <!-- 清單分類 -->
+            <div v-for="(group, groupName) in checklist" :key="groupName" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-2">
+                <h3 class="font-bold text-slate-800 text-sm border-b pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-check-to-slot text-pink-500"></i> {{ groupName }}
+                </h3>
+                <div class="space-y-2 pt-1">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-550 transition-all cursor-pointer">
+                        <input type="checkbox" v-model="item.checked" class="w-4 h-4 text-pink-500 rounded border-slate-300 focus:ring-pink-400">
+                        <span :class="item.checked ? 'line-through text-slate-400' : 'text-slate-700'" class="text-sm font-medium">{{ item.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue 邏輯 -->
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+        createApp({
+            setup() {
+                const currentTab = ref('expense');
+                
+                // 記帳資料
+                const expenses = ref([
+                    { date: '2026-06-20', category: '追隨✨', content: 'SEVENTEEN 門票', foreignAmt: 0, twdAmt: 2778 },
+                    { date: '2026-06-02', category: '交通🚗', content: '桃園<->仁川機票', foreignAmt: 0, twdAmt: 8705 }
+                ]);
+
+                const newExpense = ref({
+                    date: new Date().toISOString().split('T')[0],
+                    category: '追隨✨',
+                    content: '',
+                    foreignAmt: null,
+                    twdAmt: null
+                });
+
+                const totalTwd = computed(() => {
+                    return expenses.value.reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
+                });
+
+                const categoryTotal = (cat) => {
+                    return expenses.value.filter(i => i.category === cat).reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
+                };
+
+                const addExpense = () => {
+                    if (!newExpense.value.content || !newExpense.value.twdAmt) {
+                        alert('請填寫內容與台幣金額唷！');
+                        return;
+                    }
+                    expenses.value.unshift({ ...newExpense.value });
+                    newExpense.value.content = '';
+                    newExpense.value.foreignAmt = null;
+                    newExpense.value.twdAmt = null;
+                    saveToLocalStorage();
+                };
+
+                const deleteExpense = (index) => {
+                    expenses.value.splice(index, 1);
+                    saveToLocalStorage();
+                };
+
+                // 行李清單資料
+                const checklist = ref({
+                    '隨身包與重要證件': [
+                        { name: '★錢包 (台幣/外幣/信用卡/交通卡)', checked: false },
+                        { name: '★護照', checked: false },
+                        { name: '★手機 (含背繩)', checked: false },
+                        { name: '★行動電源', checked: false }
+                    ],
+                    '追星必備 💎': [
+                        { name: '★日本FC / 韓國WVS會員卡', checked: false },
+                        { name: '★克拉棒 + 電池', checked: false },
+                        { name: '小卡、卡膜、小卡盒子', checked: false },
+                        { name: '飯撒板板 / 素描本', checked: false }
+                    ],
+                    '哩哩摳摳 & 藥品': [
+                        { name: '★充電線 / 轉接頭(韓國)', checked: false },
+                        { name: '常備藥品 / 護墊', checked: false },
+                        { name: 'eSIM / 網卡', checked: false }
+                    ]
+                });
+
+                const totalChecklistCount = computed(() => {
+                    let count = 0;
+                    Object.values(checklist.value).forEach(group => count += group.length);
+                    return count;
+                });
+
+                const checkedCount = computed(() => {
+                    let count = 0;
+                    Object.values(checklist.value).forEach(group => {
+                        count += group.filter(i => i.checked).length;
+                    });
+                    return count;
+                });
+
+                // 本機儲存 (LocalStorage) 確保重新整理資料不遺失
+                const saveToLocalStorage = () => {
+                    localStorage.setItem('dream_trip_expenses', JSON.stringify(expenses.value));
+                    localStorage.setItem('dream_trip_checklist', JSON.stringify(checklist.value));
+                };
+
+                onMounted(() => {
+                    const savedExp = localStorage.getItem('dream_trip_expenses');
+                    if (savedExp) expenses.value = JSON.parse(savedExp);
+                    const savedCheck = localStorage.getItem('dream_trip_checklist');
+                    if (savedCheck) checklist.value = JSON.parse(savedCheck);
+                });
+
+                return {
+                    currentTab,
+                    expenses,
+                    newExpense,
+                    totalTwd,
+                    categoryTotal,
+                    addExpense,
+                    deleteExpense,
+                    checklist,
+                    totalChecklistCount,
+                    checkedCount
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
