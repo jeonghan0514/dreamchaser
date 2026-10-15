@@ -18,13 +18,13 @@
             background-color: #ffffff; /* 乾淨純白大背景 */
             color: #2c3e50;
         }
-        /* 大面積使用你給的 #d2e1fd 填滿，邊框用深一點的質感藍 #a6c4f7 */
+        /* 所有區塊與卡片（包含總花費背板）統一大面積填滿 #d2e1fd，邊框用質感深藍 #a6c4f7 */
         .poster-card {
             background-color: #d2e1fd;
             border: 1px solid #a6c4f7;
             box-shadow: 0 4px 15px rgba(166, 196, 247, 0.25);
         }
-        /* 按鈕與重點字色：使用深一點的質感藍色 */
+        /* 重點文字與按鈕顏色 */
         .brand-text {
             color: #3b65b8;
         }
@@ -47,7 +47,7 @@
             <p class="text-[11px] tracking-widest text-slate-400 uppercase mt-1 font-light">Jeonghan x Joshua Journey Into Dreaming</p>
         </header>
 
-        <!-- 導覽頁籤：大面積填滿 #d2e1fd -->
+        <!-- 導覽頁籤 -->
         <div class="flex bg-[#d2e1fd] rounded-2xl p-1 mb-6 border border-[#a6c4f7]">
             <button @click="currentTab = 'expense'" 
                 :class="currentTab === 'expense' ? 'brand-btn shadow-md' : 'brand-text hover:bg-white/50'"
@@ -63,19 +63,18 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-5">
-            <!-- 總金額卡片 -->
-            <div class="bg-gradient-to-br from-[#4873cb] via-[#5984dc] to-[#3a5fb0] rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                <div class="text-xs tracking-wider text-blue-100/90 font-light">總花費台幣 (Total Expenses)</div>
-                <div class="text-3xl font-light tracking-wide mt-1 text-white">NT$ {{ totalTwd.toLocaleString() }}</div>
-                <div class="mt-4 pt-3 border-t border-white/20 flex justify-between text-xs text-blue-100/90 font-light">
+            <!-- 總金額卡片：拿掉反光特效，改用乾淨的 #d2e1fd 填滿 -->
+            <div class="poster-card rounded-2xl p-5 text-slate-800 relative">
+                <div class="text-xs tracking-wider brand-text font-medium">總花費台幣 (Total Expenses)</div>
+                <div class="text-3xl font-bold tracking-wide mt-1 brand-text">NT$ {{ totalTwd.toLocaleString() }}</div>
+                <div class="mt-4 pt-3 border-t border-[#a6c4f7]/60 flex justify-between text-xs text-slate-700 font-medium">
                     <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
                     <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
                     <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
                 </div>
             </div>
 
-            <!-- 新增花費表單：大面積填滿 #d2e1fd -->
+            <!-- 新增花費表單 -->
             <div class="poster-card rounded-2xl p-4 space-y-3">
                 <h2 class="font-medium brand-text text-xs tracking-wider uppercase flex items-center gap-2">
                     <i class="fa-solid fa-circle-plus"></i> 新增一筆花費
@@ -136,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- 清單分類：大面積填滿 #d2e1fd -->
+            <!-- 清單分類 -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="poster-card rounded-2xl p-4 space-y-2">
                 <h3 class="font-medium brand-text text-xs tracking-wider border-b border-[#a6c4f7]/50 pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-sparkles"></i> {{ groupName }}
