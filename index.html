@@ -43,7 +43,6 @@
     </style>
 </head>
 <body class="min-h-screen pb-24">
-    <!-- 調整寬度從 max-w-md 改為 max-w-xl，畫面更寬敞 -->
     <div id="app" class="max-w-xl mx-auto p-4 md:p-6">
         <!-- 頂部標題 -->
         <header class="text-center py-6">
@@ -159,15 +158,15 @@
                 </div>
             </div>
 
-            <!-- 清單分類（行距已調緊，清爽不空曠） -->
+            <!-- 清單分類：改為 grid grid-cols-2 雙欄排版，行距緊湊俐落 -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card rounded-2xl p-4 space-y-2">
                 <h3 class="font-bold text-slate-700 text-sm tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-gem text-[#f7cac9]"></i> {{ groupName }}
                 </h3>
-                <div class="space-y-1 pt-0.5">
-                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
-                        <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#b2ceed] rounded border-slate-300 focus:ring-0">
-                        <span :class="item.checked ? 'line-through text-slate-400 font-normal' : 'text-slate-800 font-bold'" class="text-xs">{{ item.name }}</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-0.5">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
+                        <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#b2ceed] rounded border-slate-300 focus:ring-0 shrink-0">
+                        <span :class="item.checked ? 'line-through text-slate-400 font-normal' : 'text-slate-800 font-bold'" class="text-xs truncate">{{ item.name }}</span>
                     </label>
                 </div>
             </div>
