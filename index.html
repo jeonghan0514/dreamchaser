@@ -1,1 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ DREAMING | 追夢之旅 💎</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #ffffff; /* 乾淨純白背景 */
+            color: #2c3e50;
+        }
+        /* 精緻卡片設計 */
+        .poster-card {
+            background: #ffffff;
+            border: 1px solid #d2e1fd;
+            box-shadow: 0 4px 20px rgba(210, 225, 253, 0.4);
+        }
+        /* 自定義 #d2e1fd 主色相關樣式 */
+        .bg-custom-blue {
+            background-color: #d2e1fd;
+        }
+        .text-custom-blue {
+            color: #4a77c2;
+        }
+        .border-custom-blue {
+            border-color: #d2e1fd;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+    <div id="app" class="max-w-md mx-auto p-4">
+        <!-- 頂部標題：海報同款 #d2e1fd 柔和藍色系 -->
+        <header class="text-center py-6">
+            <h1 class="text-2xl font-light tracking-[0.2em] text-[#5682d3] flex items-center justify-center gap-2">
+                <span class="text-[#8cb3ed]">✨</span> DREAMING <span class="text-[#8cb3ed]">💎</span>
+            </h1>
+            <p class="text-[11px] tracking-widest text-[#799bdf] uppercase mt-1 font-light">Jeonghan x Joshua Journey Into Dreaming</p>
+        </header>
+
+        <!-- 導覽頁籤 -->
+        <div class="flex bg-[#f3f7fe] rounded-2xl p-1 mb-6 border border-[#d2e1fd]">
+            <button @click="currentTab = 'expense'" 
+                :class="currentTab === 'expense' ? 'bg-[#5682d3] text-white shadow-md shadow-[#d2e1fd]' : 'text-[#5682d3] hover:text-[#35589c]'"
+                class="flex-1 py-2.5 rounded-xl font-medium text-xs tracking-wider transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wallet"></i> 花費記帳
+            </button>
+            <button @click="currentTab = 'checklist'" 
+                :class="currentTab === 'checklist' ? 'bg-[#5682d3] text-white shadow-md shadow-[#d2e1fd]' : 'text-[#5682d3] hover:text-[#35589c]'"
+                class="flex-1 py-2.5 rounded-xl font-medium text-xs tracking-wider transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-suitcase"></i> 行李清單
+            </button>
+        </div>
+
+        <!-- 畫面 A：花費記帳 -->
+        <div v-show="currentTab === 'expense'" class="space-y-5">
+            <!-- 總金額卡片：#d2e1fd 柔和藍漸層 -->
+            <div class="bg-gradient-to-br from-[#4a77c2] via-[#6193e6] to-[#3a61a0] rounded-2xl p-5 text-white shadow-xl shadow-[#d2e1fd]/50 relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div class="text-xs tracking-wider text-blue-100/90 font-light">總花費台幣 (Total Expenses)</div>
+                <div class="text-3xl font-light tracking-wide mt-1 text-white">NT$ {{ totalTwd.toLocaleString() }}</div>
+                <div class="mt-4 pt-3 border-t border-white/20 flex justify-between text-xs text-blue-100/90 font-light">
+                    <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
+                    <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
+                    <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
+                </div>
+            </div>
+
+            <!-- 新增花費表單 -->
+            <div class="poster-card rounded-2xl p-4 space-y-3">
+                <h2 class="font-medium text-[#4a77c2] text-xs tracking-wider uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-[#5682d3]"></i> 新增一筆花費
+                </h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" v-model="newExpense.date" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#5682d3]">
+                    <select v-model="newExpense.category" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#5682d3]">
+                        <option value="追隨✨">追隨✨</option>
+                        <option value="吃吃🍡">吃吃🍡</option>
+                        <option value="住宿🏨">住宿🏨</option>
+                        <option value="交通🚗">交通🚗</option>
+                        <option value="剁手🎀">剁手🎀</option>
+                        <option value="其他🔍">其他🔍</option>
+                    </select>
+                </div>
+                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#5682d3]">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#5682d3]">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#5682d3]">
+                </div>
+                <button @click="addExpense" class="w-full bg-[#5682d3] hover:bg-[#466eba] text-white font-medium py-2.5 rounded-xl text-xs tracking-wider shadow-md shadow-[#d2e1fd] transition-all">
+                    新增花費
+                </button>
+            </div>
+
+            <!-- 花費列表 -->
+            <div class="space-y-2">
+                <h2 class="font-medium text-slate-600 text-xs tracking-wider px-1 uppercase">花費明細</h2>
+                <div v-if="expenses.length === 0" class="text-center py-10 text-slate-400 text-xs poster-card rounded-2xl">
+                    目前還沒有記帳資料唷 ✨
+                </div>
+                <div v-for="(item, index) in expenses" :key="index" class="poster-card p-3.5 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] px-2 py-0.5 bg-[#f3f7fe] text-[#4a77c2] border border-[#d2e1fd] rounded-full font-medium">{{ item.category }}</span>
+                            <span class="text-[10px] text-slate-400">{{ item.date }}</span>
+                        </div>
+                        <div class="font-normal text-slate-800 mt-1.5 text-xs">{{ item.content }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold text-[#4a77c2] text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
+                        <div v-if="item.foreignAmt" class="text-[10px] text-slate-400 mt-0.5">外幣: {{ item.foreignAmt }}</div>
+                        <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 畫面 B：行李清單 -->
+        <div v-show="currentTab === 'checklist'" class="space-y-4">
+            <div class="poster-card rounded-2xl p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="font-medium text-slate-700 text-xs tracking-wider">行李準備進度</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
+                </div>
+                <div class="w-11 h-11 rounded-full bg-[#f3f7fe] border border-[#d2e1fd] flex items-center justify-center text-[#4a77c2] font-medium text-xs">
+                    {{ Math.round((checkedCount / (totalChecklistCount || 1)) * 100) }}%
+                </div>
+            </div>
+
+            <!-- 清單分類 -->
+            <div v-for="(group, groupName) in checklist" :key="groupName" class="poster-card rounded-2xl p-4 space-y-2">
+                <h3 class="font-medium text-[#4a77c2] text-xs tracking-wider border-b border-[#f3f7fe] pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-sparkles text-[#5682d3]"></i> {{ groupName }}
+                </h3>
+                <div class="space-y-1 pt-1">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-xl hover:bg-[#f8fbff] transition-all cursor-pointer">
+                        <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#5682d3] rounded border-slate-300 focus:ring-0">
+                        <span :class="item.checked ? 'line-through text-slate-400' : 'text-slate-700'" class="text-xs font-light">{{ item.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue 與 Firebase 邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAb3KLLcrsBzF9GCBL9VN5H3A5olklgxBQ",
+            authDomain: "dreamchaser-e1053.firebaseapp.com",
+            databaseURL: "https://dreamchaser-e1053-default-rtdb.firebaseio.com",
+            projectId: "dreamchaser-e1053",
+            storageBucket: "dreamchaser-e1053.firebasestorage.app",
+            messagingSenderId: "95075536532",
+            appId: "1:95075536532:web:ccbd810271c69c1ecfee81",
+            measurementId: "G-YP10V8VCER"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const currentTab = ref('expense');
+                const expenses = ref([]);
+
+                const newExpense = ref({
+                    date: new Date().toISOString().split('T')[0],
+                    category: '追隨✨',
+                    content: '',
+                    foreignAmt: null,
+                    twdAmt: null
+                });
+
+                const defaultChecklist = {
+                    '👜 隨身包與重要證件': [
+                        { name: '★錢包 (台幣/外幣/信用卡/交通卡)', checked: false },
+                        { name: '★護照', checked: false },
+                        { name: '★手機 (含背繩)', checked: false },
+                        { name: '★行動電源', checked: false },
+                        { name: '筆、簽字筆', checked: false },
+                        { name: '雨傘', checked: false },
+                        { name: '衛生紙', checked: false },
+                        { name: '行李袋', checked: false }
+                    ],
+                    '🧸 拒當裸娃': [
+                        { name: '娃', checked: false },
+                        { name: '小卡', checked: false },
+                        { name: '卡膜、小卡盒子', checked: false },
+                        { name: '飯撒板板 / 素描本', checked: false },
+                        { name: '神席御守', checked: false }
+                    ],
+                    '👗 層層堆疊的美麗 (衣物)': [
+                        { name: '上身', checked: false },
+                        { name: '下著', checked: false },
+                        { name: '內衣/褲', checked: false },
+                        { name: '襪子', checked: false },
+                        { name: '睡衣/褲', checked: false },
+                        { name: '飾品', checked: false }
+                    ],
+                    '💄 哩哩摳摳 (美妝保養)': [
+                        { name: '臉部保濕', checked: false },
+                        { name: '眼霜', checked: false },
+                        { name: '護髮乳 (吹髮前)', checked: false },
+                        { name: '髮油', checked: false },
+                        { name: '面膜', checked: false },
+                        { name: '髮捲 (瀏海)', checked: false },
+                        { name: '梳子', checked: false },
+                        { name: '牙刷/膏', checked: false },
+                        { name: '洗面乳', checked: false },
+                        { name: '潤髮乳', checked: false },
+                        { name: '卸妝水/乳/霜/油', checked: false },
+                        { name: '眼唇卸妝', checked: false },
+                        { name: '化妝棉', checked: false },
+                        { name: '棉花棒', checked: false },
+                        { name: '牙線', checked: false },
+                        { name: '粉餅/刷', checked: false },
+                        { name: '遮瑕/刷', checked: false },
+                        { name: '腮紅/刷', checked: false },
+                        { name: '眼影/刷', checked: false },
+                        { name: '睫毛膏/夾', checked: false },
+                        { name: '眼線液', checked: false },
+                        { name: '眉筆', checked: false },
+                        { name: '唇膏/護唇膏', checked: false },
+                        { name: '定妝噴霧', checked: false },
+                        { name: '香水', checked: false },
+                        { name: '鯊魚夾', checked: false }
+                    ],
+                    '⚡ 電子與日常小物': [
+                        { name: '★充電線', checked: false },
+                        { name: '★眼鏡/眼鏡盒', checked: false },
+                        { name: '★隱形眼鏡', checked: false },
+                        { name: '★轉接頭 (韓國)', checked: false }
+                    ],
+                    '💎 追星女的生存法則': [
+                        { name: 'eSIM / 網卡', checked: false },
+                        { name: '旅遊不便+平安險', checked: false },
+                        { name: '換幣', checked: false },
+                        { name: '入境Q-CODE (韓國) / Visit Japan Web (日本)', checked: false },
+                        { name: '★日本FC / 韓國WVS會員卡', checked: false },
+                        { name: '★克拉棒', checked: false },
+                        { name: '★電池 (克拉棒)', checked: false },
+                        { name: '★速效藍莓', checked: false }
+                    ],
+                    '💊 髒污掰掰 & 其他': [
+                        { name: '常備藥品', checked: false },
+                        { name: '護墊 / 衛生棉 / 棉條', checked: false },
+                        { name: '口罩', checked: false }
+                    ]
+                };
+
+                const checklist = ref(defaultChecklist);
+
+                onMounted(() => {
+                    const expRef = dbRef(database, 'expenses');
+                    onValue(expRef, (snapshot) => {
+                        const data = snapshot.val();
+                        expenses.value = data ? Object.values(data) : [];
+                    });
+
+                    const checkRef = dbRef(database, 'checklist');
+                    onValue(checkRef, (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            checklist.value = data;
+                        } else {
+                            set(checkRef, defaultChecklist);
+                        }
+                    });
+                });
+
+                const totalTwd = computed(() => {
+                    return expenses.value.reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
+                });
+
+                const categoryTotal = (cat) => {
+                    return expenses.value.filter(i => i.category === cat).reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
+                };
+
+                const addExpense = () => {
+                    if (!newExpense.value.content || !newExpense.value.twdAmt) {
+                        alert('請填寫內容與台幣金額唷！');
+                        return;
+                    }
+                    expenses.value.unshift({ ...newExpense.value });
+                    set(dbRef(database, 'expenses'), expenses.value);
+
+                    newExpense.value.content = '';
+                    newExpense.value.foreignAmt = null;
+                    newExpense.value.twdAmt = null;
+                };
+
+                const deleteExpense = (index) => {
+                    expenses.value.splice(index, 1);
+                    set(dbRef(database, 'expenses'), expenses.value);
+                };
+
+                const saveChecklist = () => {
+                    set(dbRef(database, 'checklist'), checklist.value);
+                };
+
+                const totalChecklistCount = computed(() => {
+                    let count = 0;
+                    Object.values(checklist.value).forEach(group => count += group.length);
+                    return count;
+                });
+
+                const checkedCount = computed(() => {
+                    let count = 0;
+                    Object.values(checklist.value).forEach(group => {
+                        count += group.filter(i => i.checked).length;
+                    });
+                    return count;
+                });
+
+                return {
+                    currentTab,
+                    expenses,
+                    newExpense,
+                    totalTwd,
+                    categoryTotal,
+                    addExpense,
+                    deleteExpense,
+                    checklist,
+                    saveChecklist,
+                    totalChecklistCount,
+                    checkedCount
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
