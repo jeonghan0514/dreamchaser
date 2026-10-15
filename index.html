@@ -102,15 +102,15 @@
                 
                 <!-- 外幣與匯率欄位 -->
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="onForeignInput" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
-                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="onForeignInput" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="updateAmount" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="updateAmount" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 </div>
 
                 <!-- 台幣金額與刷卡手續費選項 -->
                 <div class="space-y-2">
-                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="manualTwdInput = true" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="manualInput = true" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                     <label class="flex items-center gap-2 cursor-pointer pt-1 px-1">
-                        <input type="checkbox" v-model="newExpense.isCreditCard" @change="onCardToggle" class="w-4 h-4 accent-[#f7cac9] rounded border-slate-300 focus:ring-0">
+                        <input type="checkbox" v-model="newExpense.isCreditCard" @change="toggleCardFee" class="w-4 h-4 accent-[#f7cac9] rounded border-slate-300 focus:ring-0">
                         <span class="text-xs text-slate-600 font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
                     </label>
                 </div>
@@ -260,7 +260,8 @@
 
                 const filterCategory = ref('');
                 const filterMonth = ref('');
-                const manualTwdInput = ref(false); // 記錄是否為手動輸入台幣
+                const manualInput = ref(false);
+                let rawBaseAmount = 0; // 記錄未加手續費前的原始金額
 
                 const categoryColors = {
                     '門票🎫': '#A8DADC',
@@ -282,34 +283,47 @@
                     isCreditCard: false
                 });
 
-                // 當輸入外幣或匯率時計算台幣
-                const onForeignInput = () => {
-                    manualTwdInput.value = false;
-                    calculateAmount();
-                };
-
-                // 當切換刷卡勾選框時重新計算
-                const onCardToggle = () => {
-                    calculateAmount();
-                };
-
-                // 核心計算邏輯
-                const calculateAmount = () => {
+                // 外幣輸入時計算
+                const updateAmount = () => {
+                    manualInput.value = false;
                     if (newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
-                        let base = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
-                        if (newExpense.value.isCreditCard) {
-                            base = base * 1.015;
+                        rawBaseAmount = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
+                        applyCardFeeIfNeeded();
+                    }
+                };
+
+                // 監聽台幣金額手動輸入
+                watch(() => newExpense.value.twdAmt, (newVal) => {
+                    if (manualInput.value && newVal) {
+                        // 如果使用者手動改了台幣金額，且沒有勾選刷卡，就把這筆當作新基準
+                        if (!newExpense.value.isCreditCard) {
+                            rawBaseAmount = Number(newVal);
                         }
-                        newExpense.value.twdAmt = Math.round(base);
-                    } else if (manualTwdInput.value && newExpense.value.twdAmt) {
-                        // 如果使用者是手動輸入台幣，勾選或取消刷卡時直接對目前台幣數值做計算
-                        let base = Number(newExpense.value.twdAmt);
-                        // 簡單用比例增減或直接依勾選狀態乘/除
+                    }
+                });
+
+                // 勾選或取消刷卡時的處理
+                const toggleCardFee = () => {
+                    if (!manualInput.value && newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
+                        rawBaseAmount = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
+                    } else if (newExpense.value.twdAmt) {
+                        // 如果是手動輸入的，以當前數值為基準
                         if (newExpense.value.isCreditCard) {
-                            newExpense.value.twdAmt = Math.round(base * 1.015);
+                            rawBaseAmount = Number(newExpense.value.twdAmt) / 1.015;
                         } else {
-                            // 若取消勾選，除以 1.015還原
-                            newExpense.value.twdAmt = Math.round(base / 1.015);
+                            rawBaseAmount = Number(newExpense.value.twdAmt);
+                        }
+                    }
+                    manualInput.value = true;
+                    applyCardFeeIfNeeded();
+                };
+
+                const applyCardFeeIfNeeded = () => {
+                    if (rawBaseAmount > 0) {
+                        if (newExpense.value.isCreditCard) {
+                            newExpense.value.twdAmt = Math.round(rawBaseAmount * 1.015);
+                        } else {
+                            newExpense.value.twdAmt = Math.round(rawBaseAmount);
                         }
                     }
                 };
@@ -504,7 +518,8 @@
                     newExpense.value.exchangeRate = null;
                     newExpense.value.twdAmt = null;
                     newExpense.value.isCreditCard = false;
-                    manualTwdInput.value = false;
+                    manualInput.value = false;
+                    rawBaseAmount = 0;
                 };
 
                 const deleteExpense = (index) => {
@@ -551,8 +566,8 @@
                     filterCategory,
                     filterMonth,
                     filteredExpenses,
-                    onForeignInput,
-                    onCardToggle,
+                    updateAmount,
+                    toggleCardFee,
                     addExpense,
                     deleteExpense,
                     checklist,
