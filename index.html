@@ -173,7 +173,6 @@
                                     {{ item.category }}
                                 </span>
                                 <span class="text-[10px] text-slate-400 font-medium">{{ item.date }}</span>
-                                <span v-if="item.isCreditCard" class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">刷卡+1.5%</span>
                             </div>
                             <div class="font-bold text-slate-800 mt-1 text-xs">{{ item.content }}</div>
                         </div>
@@ -284,17 +283,27 @@
 
                 // 自動計算台幣金額（含外幣換算與刷卡 1.5% 手續費）
                 const calcTwd = () => {
+                    let base = 0;
+                    // 如果有外幣與匯率，先算外幣換台幣
                     if (newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
-                        let base = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
+                        base = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
+                    } else if (newExpense.value.twdAmt) {
+                        // 如果直接輸入台幣金額，則以目前台幣金額為基準
+                        base = Number(newExpense.value.twdAmt);
+                    }
+
+                    if (base > 0) {
                         if (newExpense.value.isCreditCard) {
-                            base = base * 1.015;
+                            base = base * 1.015; // 加上 1.5% 手續費
                         }
                         newExpense.value.twdAmt = Math.round(base);
-                    } else if (newExpense.value.twdAmt && newExpense.value.isCreditCard) {
-                        // 若直接輸入台幣但勾選刷卡
-                        // 這裡可以保持手動或自動，主要由使用者確認
                     }
                 };
+
+                // 當勾選框改變時也觸發計算
+                watch(() => newExpense.value.isCreditCard, () => {
+                    calcTwd();
+                });
 
                 const defaultChecklist = {
                     '👜 隨身包與重要證件': [
@@ -478,10 +487,7 @@
                         return;
                     }
 
-                    // 如果有勾選刷卡但還沒乘上1.5%，保險起見再次計算
-                    if (newExpense.value.isCreditCard && newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
-                        calcTwd();
-                    }
+                    calcTwd(); // 確保儲存前數值是最新計算好的
 
                     expenses.value.unshift({ ...newExpense.value });
                     set(dbRef(database, 'expenses'), expenses.value);
