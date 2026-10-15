@@ -67,7 +67,7 @@
             </button>
         </div>
 
-        <!-- 畫面 A：花費記帳 -->
+        <!-- 畫面 A：花費記帳（已拿掉下方明細） -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
             <!-- 總金額卡片 -->
             <div class="money-total-card rounded-2xl p-5 text-slate-800">
@@ -106,30 +106,6 @@
                 <button @click="addExpense" class="w-full money-btn py-3 rounded-xl text-sm font-bold tracking-wider shadow-sm transition-all">
                     新增花費
                 </button>
-            </div>
-
-            <!-- 花費列表 -->
-            <div class="space-y-3">
-                <h2 class="font-bold text-slate-600 text-sm tracking-wider px-1 uppercase">明細列表</h2>
-                <div v-if="expenses.length === 0" class="text-center py-10 text-slate-400 text-sm money-card rounded-2xl">
-                    目前還沒有記帳資料唷 ✨
-                </div>
-                <div v-for="(item, index) in expenses" :key="index" class="money-card p-4 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold text-slate-800" :style="{ backgroundColor: categoryColors[item.category] || '#edf2f7' }">
-                                {{ item.category }}
-                            </span>
-                            <span class="text-xs text-slate-400 font-medium">{{ item.date }}</span>
-                        </div>
-                        <div class="font-bold text-slate-800 mt-2 text-sm">{{ item.content }}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-slate-900 text-sm">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
-                        <div v-if="item.foreignAmt" class="text-xs text-slate-400 font-medium mt-0.5">外幣: {{ item.foreignAmt }}</div>
-                        <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-sm mt-1.5 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -191,6 +167,7 @@
                         <div class="text-right">
                             <div class="font-bold text-slate-900 text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
                             <div v-if="item.foreignAmt" class="text-[10px] text-slate-400">外幣: {{ item.foreignAmt }}</div>
+                            <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -269,14 +246,14 @@
                 const expenses = ref([]);
                 const flightInfo = ref({ dep: '', ret: '' });
 
-                // 篩選器狀態 (改成月份篩選 filterMonth)
+                // 篩選器狀態
                 const filterCategory = ref('');
                 const filterMonth = ref('');
 
-                // 更新後的分類專屬顏色對應表
+                // 更新後的分類專屬顏色對應表（追隨已改為 #d2e1fd）
                 const categoryColors = {
                     '門票🎫': '#A8DADC',
-                    '追隨✨': '#92A8D1',
+                    '追隨✨': '#d2e1fd',
                     '交通🚗': '#F3E3B6',
                     '吃吃🍡': '#F4A261',
                     '住宿🏨': '#B7E4C7',
@@ -413,11 +390,9 @@
                     return res;
                 });
 
-                // 篩選邏輯：支援分類與月份 (YYYY-MM) 篩選
                 const filteredExpenses = computed(() => {
                     return expenses.value.filter(item => {
                         const matchCat = filterCategory.value ? item.category === filterCategory.value : true;
-                        // item.date 格式為 YYYY-MM-DD，比對前7個字元 (YYYY-MM) 即可
                         const matchMonth = filterMonth.value ? item.date.startsWith(filterMonth.value) : true;
                         return matchCat && matchMonth;
                     });
