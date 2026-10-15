@@ -18,19 +18,16 @@
             background-color: #f7f9fc;
             color: #2d3748;
         }
-        /* moneymoney 風格：極簡、清爽、俐落的卡片與框線 */
         .money-card {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
-        /* 總金額大卡片：使用克拉藍大面積填滿 */
         .money-total-card {
             background-color: #d2e1fd;
             border: 1px solid #b8d0fc;
             box-shadow: 0 4px 15px rgba(210, 225, 253, 0.3);
         }
-        /* 克拉粉按鈕 */
         .money-btn {
             background-color: #f7cac9;
             color: #2d3748;
@@ -46,10 +43,11 @@
     </style>
 </head>
 <body class="min-h-screen pb-24">
-    <div id="app" class="max-w-md mx-auto p-4">
-        <!-- 頂部標題：moneymoney 簡潔風 -->
+    <!-- 調整寬度從 max-w-md 改為 max-w-xl，畫面更寬敞 -->
+    <div id="app" class="max-w-xl mx-auto p-4 md:p-6">
+        <!-- 頂部標題 -->
         <header class="text-center py-6">
-            <h1 class="text-xl font-bold tracking-wider text-slate-700 flex items-center justify-center gap-2">
+            <h1 class="text-2xl font-bold tracking-wider text-slate-700 flex items-center justify-center gap-2">
                 <span>💎</span> 追夢之旅 <span class="text-slate-400 font-light">| money</span>
             </h1>
             <p class="text-xs tracking-widest text-slate-400 uppercase mt-1 font-medium">Concert & Trip Expense Manager</p>
@@ -59,13 +57,13 @@
         <div class="flex money-card rounded-2xl p-1.5 mb-6">
             <button @click="currentTab = 'expense'" 
                 :class="currentTab === 'expense' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-2">
+                class="flex-1 py-3 rounded-xl text-sm font-bold tracking-wider transition-all flex items-center justify-center gap-2">
                 <i class="fa-solid fa-wallet"></i> 花費記帳
             </button>
             <button @click="currentTab = 'checklist'" 
                 :class="currentTab === 'checklist' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-2">
-                <i class="fa-solid fa-suitcase"></i> 行李清單
+                class="flex-1 py-3 rounded-xl text-sm font-bold tracking-wider transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-suitcase"></i> 行李與航班
             </button>
         </div>
 
@@ -75,7 +73,7 @@
             <div class="money-total-card rounded-2xl p-5 text-slate-800">
                 <div class="text-xs tracking-wider text-slate-600 font-bold">總花費金額 (Total)</div>
                 <div class="text-3xl font-bold tracking-wide mt-1 text-slate-900">NT$ {{ totalTwd.toLocaleString() }}</div>
-                <div class="mt-4 pt-3 border-t border-[#b8d0fc] flex justify-between text-xs text-slate-700 font-bold">
+                <div class="mt-4 pt-3 border-t border-[#b8d0fc] flex flex-wrap justify-between gap-2 text-xs text-slate-700 font-bold">
                     <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
                     <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
                     <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
@@ -83,13 +81,13 @@
             </div>
 
             <!-- 新增花費表單 -->
-            <div class="money-card rounded-2xl p-4 space-y-3">
-                <h2 class="font-bold text-slate-700 text-xs tracking-wider uppercase flex items-center gap-2">
+            <div class="money-card rounded-2xl p-5 space-y-3">
+                <h2 class="font-bold text-slate-700 text-sm tracking-wider uppercase flex items-center gap-2">
                     <i class="fa-solid fa-circle-plus text-slate-500"></i> 新增記錄
                 </h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#b8d0fc]">
-                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#b8d0fc]">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
+                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
                         <option value="追隨✨">追隨✨</option>
                         <option value="吃吃🍡">吃吃🍡</option>
                         <option value="住宿🏨">住宿🏨</option>
@@ -98,58 +96,76 @@
                         <option value="其他🔍">其他🔍</option>
                     </select>
                 </div>
-                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
-                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 </div>
-                <button @click="addExpense" class="w-full money-btn py-2.5 rounded-xl text-xs tracking-wider shadow-sm transition-all">
+                <button @click="addExpense" class="w-full money-btn py-3 rounded-xl text-sm font-bold tracking-wider shadow-sm transition-all">
                     新增花費
                 </button>
             </div>
 
             <!-- 花費列表 -->
-            <div class="space-y-2">
-                <h2 class="font-bold text-slate-600 text-xs tracking-wider px-1 uppercase">明細列表</h2>
-                <div v-if="expenses.length === 0" class="text-center py-8 text-slate-400 text-xs money-card rounded-2xl">
+            <div class="space-y-3">
+                <h2 class="font-bold text-slate-600 text-sm tracking-wider px-1 uppercase">明細列表</h2>
+                <div v-if="expenses.length === 0" class="text-center py-10 text-slate-400 text-sm money-card rounded-2xl">
                     目前還沒有記帳資料唷 ✨
                 </div>
-                <div v-for="(item, index) in expenses" :key="index" class="money-card p-3.5 rounded-2xl flex justify-between items-center">
+                <div v-for="(item, index) in expenses" :key="index" class="money-card p-4 rounded-2xl flex justify-between items-center">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] px-2 py-0.5 money-tag rounded-full font-bold">{{ item.category }}</span>
-                            <span class="text-[10px] text-slate-400">{{ item.date }}</span>
+                            <span class="text-xs px-2.5 py-0.5 money-tag rounded-full font-bold">{{ item.category }}</span>
+                            <span class="text-xs text-slate-400 font-medium">{{ item.date }}</span>
                         </div>
-                        <div class="font-bold text-slate-800 mt-1.5 text-xs">{{ item.content }}</div>
+                        <div class="font-bold text-slate-800 mt-2 text-sm">{{ item.content }}</div>
                     </div>
                     <div class="text-right">
-                        <div class="font-bold text-slate-900 text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
-                        <div v-if="item.foreignAmt" class="text-[10px] text-slate-400 mt-0.5">外幣: {{ item.foreignAmt }}</div>
-                        <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                        <div class="font-bold text-slate-900 text-sm">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
+                        <div v-if="item.foreignAmt" class="text-xs text-slate-400 font-medium mt-0.5">外幣: {{ item.foreignAmt }}</div>
+                        <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-sm mt-1.5 transition-colors"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 畫面 B：行李清單 -->
+        <!-- 畫面 B：行李清單與航班資訊 -->
         <div v-show="currentTab === 'checklist'" class="space-y-4">
+            <!-- 航班資訊編輯卡片 -->
+            <div class="money-card rounded-2xl p-5 space-y-3">
+                <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-plane-departure text-[#f7cac9]"></i> 航班與行程資訊
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500 font-medium">去程資訊</label>
+                        <input type="text" v-model="flightInfo.dep" placeholder="例: 10/29 TPE 20:00 -> ICN 23:30" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#b8d0fc]" @change="saveFlightInfo">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500 font-medium">回程資訊</label>
+                        <input type="text" v-model="flightInfo.ret" placeholder="例: 11/2 ICN 00:30 -> RMQ 02:10" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#b8d0fc]" @change="saveFlightInfo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 行李準備進度 -->
             <div class="money-card rounded-2xl p-4 flex justify-between items-center">
                 <div>
-                    <h2 class="font-bold text-slate-800 text-xs tracking-wider">行李準備進度</h2>
-                    <p class="text-[10px] text-slate-400 mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
+                    <h2 class="font-bold text-slate-800 text-sm tracking-wider">行李準備進度</h2>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
                 </div>
-                <div class="w-11 h-11 rounded-full money-tag flex items-center justify-center font-bold text-xs">
+                <div class="w-12 h-12 rounded-full money-tag flex items-center justify-center font-bold text-sm">
                     {{ Math.round((checkedCount / (totalChecklistCount || 1)) * 100) }}%
                 </div>
             </div>
 
-            <!-- 清單分類 -->
+            <!-- 清單分類（行距已調緊，清爽不空曠） -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card rounded-2xl p-4 space-y-2">
-                <h3 class="font-bold text-slate-700 text-xs tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
+                <h3 class="font-bold text-slate-700 text-sm tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-gem text-[#f7cac9]"></i> {{ groupName }}
                 </h3>
-                <div class="space-y-1 pt-1">
-                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-all cursor-pointer">
+                <div class="space-y-1 pt-0.5">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
                         <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#b2ceed] rounded border-slate-300 focus:ring-0">
                         <span :class="item.checked ? 'line-through text-slate-400 font-normal' : 'text-slate-800 font-bold'" class="text-xs">{{ item.name }}</span>
                     </label>
@@ -183,6 +199,7 @@
             setup() {
                 const currentTab = ref('expense');
                 const expenses = ref([]);
+                const flightInfo = ref({ dep: '', ret: '' });
 
                 const newExpense = ref({
                     date: new Date().toISOString().split('T')[0],
@@ -287,6 +304,12 @@
                             set(checkRef, defaultChecklist);
                         }
                     });
+
+                    const flightRef = dbRef(database, 'flightInfo');
+                    onValue(flightRef, (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) flightInfo.value = data;
+                    });
                 });
 
                 const totalTwd = computed(() => {
@@ -319,6 +342,10 @@
                     set(dbRef(database, 'checklist'), checklist.value);
                 };
 
+                const saveFlightInfo = () => {
+                    set(dbRef(database, 'flightInfo'), flightInfo.value);
+                };
+
                 const totalChecklistCount = computed(() => {
                     let count = 0;
                     Object.values(checklist.value).forEach(group => count += group.length);
@@ -337,6 +364,8 @@
                     currentTab,
                     expenses,
                     newExpense,
+                    flightInfo,
+                    saveFlightInfo,
                     totalTwd,
                     categoryTotal,
                     addExpense,
