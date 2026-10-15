@@ -115,7 +115,7 @@
                     <i class="fa-solid fa-check-to-slot text-pink-500"></i> {{ groupName }}
                 </h3>
                 <div class="space-y-2 pt-1">
-                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-550 transition-all cursor-pointer">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
                         <input type="checkbox" v-model="item.checked" class="w-4 h-4 text-pink-500 rounded border-slate-300 focus:ring-pink-400">
                         <span :class="item.checked ? 'line-through text-slate-400' : 'text-slate-700'" class="text-sm font-medium">{{ item.name }}</span>
                     </label>
@@ -170,24 +170,81 @@
                     saveToLocalStorage();
                 };
 
-                // 行李清單資料
+                // 行李清單資料（完整對應試算表行李check頁面）
                 const checklist = ref({
-                    '隨身包與重要證件': [
+                    '👜 隨身包與重要證件': [
                         { name: '★錢包 (台幣/外幣/信用卡/交通卡)', checked: false },
                         { name: '★護照', checked: false },
                         { name: '★手機 (含背繩)', checked: false },
-                        { name: '★行動電源', checked: false }
+                        { name: '★行動電源', checked: false },
+                        { name: '筆、簽字筆', checked: false },
+                        { name: '雨傘', checked: false },
+                        { name: '衛生紙', checked: false },
+                        { name: '行李袋', checked: false }
                     ],
-                    '追星必備 💎': [
+                    '🧸 拒當裸娃': [
+                        { name: '娃', checked: false },
+                        { name: '小卡', checked: false },
+                        { name: '卡膜、小卡盒子', checked: false },
+                        { name: '飯撒板板 / 素描本', checked: false },
+                        { name: '神席御守', checked: false }
+                    ],
+                    '👗 層層堆疊的美麗 (衣物)': [
+                        { name: '上身', checked: false },
+                        { name: '下著', checked: false },
+                        { name: '內衣/褲', checked: false },
+                        { name: '襪子', checked: false },
+                        { name: '睡衣/褲', checked: false },
+                        { name: '飾品', checked: false }
+                    ],
+                    '💄 哩哩摳摳 (美妝保養)': [
+                        { name: '臉部保濕', checked: false },
+                        { name: '眼霜', checked: false },
+                        { name: '護髮乳 (吹髮前)', checked: false },
+                        { name: '髮油', checked: false },
+                        { name: '面膜', checked: false },
+                        { name: '髮捲 (瀏海)', checked: false },
+                        { name: '梳子', checked: false },
+                        { name: '牙刷/膏', checked: false },
+                        { name: '洗面乳', checked: false },
+                        { name: '潤髮乳', checked: false },
+                        { name: '卸妝水/乳/霜/油', checked: false },
+                        { name: '眼唇卸妝', checked: false },
+                        { name: '化妝棉', checked: false },
+                        { name: '棉花棒', checked: false },
+                        { name: '牙線', checked: false },
+                        { name: '粉餅/刷', checked: false },
+                        { name: '遮瑕/刷', checked: false },
+                        { name: '腮紅/刷', checked: false },
+                        { name: '眼影/刷', checked: false },
+                        { name: '睫毛膏/夾', checked: false },
+                        { name: '眼線液', checked: false },
+                        { name: '眉筆', checked: false },
+                        { name: '唇膏/護唇膏', checked: false },
+                        { name: '定妝噴霧', checked: false },
+                        { name: '香水', checked: false },
+                        { name: '鯊魚夾', checked: false }
+                    ],
+                    '⚡ 電子與日常小物': [
+                        { name: '★充電線', checked: false },
+                        { name: '★眼鏡/眼鏡盒', checked: false },
+                        { name: '★隱形眼鏡', checked: false },
+                        { name: '★轉接頭 (韓國)', checked: false }
+                    ],
+                    '💎 追星女的生存法則': [
+                        { name: 'eSIM / 網卡', checked: false },
+                        { name: '旅遊不便+平安險', checked: false },
+                        { name: '換幣', checked: false },
+                        { name: '入境Q-CODE (韓國) / Visit Japan Web (日本)', checked: false },
                         { name: '★日本FC / 韓國WVS會員卡', checked: false },
-                        { name: '★克拉棒 + 電池', checked: false },
-                        { name: '小卡、卡膜、小卡盒子', checked: false },
-                        { name: '飯撒板板 / 素描本', checked: false }
+                        { name: '★克拉棒', checked: false },
+                        { name: '★電池 (克拉棒)', checked: false },
+                        { name: '★速效藍莓', checked: false }
                     ],
-                    '哩哩摳摳 & 藥品': [
-                        { name: '★充電線 / 轉接頭(韓國)', checked: false },
-                        { name: '常備藥品 / 護墊', checked: false },
-                        { name: 'eSIM / 網卡', checked: false }
+                    '💊 髒污掰掰 & 其他': [
+                        { name: '常備藥品', checked: false },
+                        { name: '護墊 / 衛生棉 / 棉條', checked: false },
+                        { name: '口罩', checked: false }
                     ]
                 });
 
@@ -205,7 +262,6 @@
                     return count;
                 });
 
-                // 本機儲存 (LocalStorage) 確保重新整理資料不遺失
                 const saveToLocalStorage = () => {
                     localStorage.setItem('dream_trip_expenses', JSON.stringify(expenses.value));
                     localStorage.setItem('dream_trip_checklist', JSON.stringify(checklist.value));
@@ -214,7 +270,7 @@
                 onMounted(() => {
                     const savedExp = localStorage.getItem('dream_trip_expenses');
                     if (savedExp) expenses.value = JSON.parse(savedExp);
-                    const savedCheck = localStorage.getItem('dream_trip_checklist');
+                    const savedCheck = localStorage.getItem('dream_typed_checklist') || localStorage.getItem('dream_trip_checklist');
                     if (savedCheck) checklist.value = JSON.parse(savedCheck);
                 });
 
