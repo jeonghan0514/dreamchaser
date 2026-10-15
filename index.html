@@ -99,17 +99,29 @@
                     </select>
                 </div>
                 <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                
+                <!-- 外幣與匯率欄位 -->
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
-                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcTwd" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcTwd" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 </div>
+
+                <!-- 台幣金額與刷卡手續費選項 -->
+                <div class="space-y-2">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <label class="flex items-center gap-2 cursor-pointer pt-1 px-1">
+                        <input type="checkbox" v-model="newExpense.isCreditCard" @change="calcTwd" class="w-4 h-4 accent-[#f7cac9] rounded border-slate-300 focus:ring-0">
+                        <span class="text-xs text-slate-600 font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
+                    </label>
+                </div>
+
                 <button @click="addExpense" class="w-full money-btn py-3 rounded-xl text-sm font-bold tracking-wider shadow-sm transition-all">
                     新增花費
                 </button>
             </div>
         </div>
 
-        <!-- 畫面 B：圓餅圖與明細（按照日期由新到舊排序） -->
+        <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
             <!-- 圓餅圖區塊 -->
             <div class="money-card rounded-2xl p-5 text-center space-y-4">
@@ -161,12 +173,13 @@
                                     {{ item.category }}
                                 </span>
                                 <span class="text-[10px] text-slate-400 font-medium">{{ item.date }}</span>
+                                <span v-if="item.isCreditCard" class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">刷卡+1.5%</span>
                             </div>
                             <div class="font-bold text-slate-800 mt-1 text-xs">{{ item.content }}</div>
                         </div>
                         <div class="text-right">
                             <div class="font-bold text-slate-900 text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
-                            <div v-if="item.foreignAmt" class="text-[10px] text-slate-400">外幣: {{ item.foreignAmt }}</div>
+                            <div v-if="item.foreignAmt" class="text-[10px] text-slate-400">外幣: {{ item.foreignAmt }} (匯率: {{ item.exchangeRate }})</div>
                             <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
@@ -264,8 +277,24 @@
                     category: '追隨✨',
                     content: '',
                     foreignAmt: null,
-                    twdAmt: null
+                    exchangeRate: null,
+                    twdAmt: null,
+                    isCreditCard: false
                 });
+
+                // 自動計算台幣金額（含外幣換算與刷卡 1.5% 手續費）
+                const calcTwd = () => {
+                    if (newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
+                        let base = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
+                        if (newExpense.value.isCreditCard) {
+                            base = base * 1.015;
+                        }
+                        newExpense.value.twdAmt = Math.round(base);
+                    } else if (newExpense.value.twdAmt && newExpense.value.isCreditCard) {
+                        // 若直接輸入台幣但勾選刷卡
+                        // 這裡可以保持手動或自動，主要由使用者確認
+                    }
+                };
 
                 const defaultChecklist = {
                     '👜 隨身包與重要證件': [
@@ -388,14 +417,12 @@
                     return res;
                 });
 
-                // 篩選並依照日期「由新到舊」排序
                 const filteredExpenses = computed(() => {
                     const filtered = expenses.value.filter(item => {
                         const matchCat = filterCategory.value ? item.category === filterCategory.value : true;
                         const matchMonth = filterMonth.value ? item.date.startsWith(filterMonth.value) : true;
                         return matchCat && matchMonth;
                     });
-                    // 依照日期字串降冪排序（新日期排在前面）
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
@@ -450,16 +477,23 @@
                         alert('請填寫內容與台幣金額唷！');
                         return;
                     }
+
+                    // 如果有勾選刷卡但還沒乘上1.5%，保險起見再次計算
+                    if (newExpense.value.isCreditCard && newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
+                        calcTwd();
+                    }
+
                     expenses.value.unshift({ ...newExpense.value });
                     set(dbRef(database, 'expenses'), expenses.value);
 
                     newExpense.value.content = '';
                     newExpense.value.foreignAmt = null;
+                    newExpense.value.exchangeRate = null;
                     newExpense.value.twdAmt = null;
+                    newExpense.value.isCreditCard = false;
                 };
 
                 const deleteExpense = (index) => {
-                    // 由於可能經過排序，透過比對原始陣列來刪除正確的項目
                     const target = filteredExpenses.value[index];
                     const realIndex = expenses.value.findIndex(item => item === target);
                     if (realIndex !== -1) {
@@ -503,6 +537,7 @@
                     filterCategory,
                     filterMonth,
                     filteredExpenses,
+                    calcTwd,
                     addExpense,
                     deleteExpense,
                     checklist,
