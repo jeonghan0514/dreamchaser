@@ -52,16 +52,21 @@
             <p class="text-xs tracking-widest text-slate-400 uppercase mt-1 font-medium">Concert & Trip Expense Manager</p>
         </header>
 
-        <!-- 導覽頁籤 -->
+        <!-- 導覽頁籤（新增圓餅圖分頁） -->
         <div class="flex money-card rounded-2xl p-1.5 mb-6">
             <button @click="currentTab = 'expense'" 
                 :class="currentTab === 'expense' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-3 rounded-xl text-sm font-bold tracking-wider transition-all flex items-center justify-center gap-2">
+                class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-wallet"></i> 花費記帳
+            </button>
+            <button @click="currentTab = 'chart'" 
+                :class="currentTab === 'chart' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-chart-pie"></i> 花費圓餅圖
             </button>
             <button @click="currentTab = 'checklist'" 
                 :class="currentTab === 'checklist' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-3 rounded-xl text-sm font-bold tracking-wider transition-all flex items-center justify-center gap-2">
+                class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-suitcase"></i> 行李與航班
             </button>
         </div>
@@ -128,7 +133,26 @@
             </div>
         </div>
 
-        <!-- 畫面 B：行李清單與航班資訊 -->
+        <!-- 畫面 B：花費圓餅圖分析 -->
+        <div v-show="currentTab === 'chart'" class="space-y-4">
+            <div class="money-card rounded-2xl p-5 text-center space-y-4">
+                <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-[#f7cac9]"></i> 各分類花費佔比
+                </h2>
+                <div class="flex justify-center">
+                    <canvas id="expenseChart" width="240" height="240" class="max-w-full"></canvas>
+                </div>
+                <!-- 分類金額清單 -->
+                <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 text-left text-xs">
+                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2 rounded-xl bg-slate-50">
+                        <span class="font-bold text-slate-700">{{ cat }}</span>
+                        <span class="font-medium text-slate-600">NT$ {{ amt.toLocaleString() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 畫面 C：行李清單與航班資訊 -->
         <div v-show="currentTab === 'checklist'" class="space-y-4">
             <!-- 航班資訊編輯卡片 -->
             <div class="money-card rounded-2xl p-5 space-y-3">
@@ -158,7 +182,7 @@
                 </div>
             </div>
 
-            <!-- 清單分類：改為 grid grid-cols-2 雙欄排版，行距緊湊俐落 -->
+            <!-- 清單分類（雙欄排版） -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card rounded-2xl p-4 space-y-2">
                 <h3 class="font-bold text-slate-700 text-sm tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-gem text-[#f7cac9]"></i> {{ groupName }}
@@ -192,7 +216,7 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, watch, nextTick, onMounted } = Vue;
 
         createApp({
             setup() {
@@ -292,6 +316,7 @@
                     onValue(expRef, (snapshot) => {
                         const data = snapshot.val();
                         expenses.value = data ? Object.values(data) : [];
+                        drawChart();
                     });
 
                     const checkRef = dbRef(database, 'checklist');
@@ -318,6 +343,67 @@
                 const categoryTotal = (cat) => {
                     return expenses.value.filter(i => i.category === cat).reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
                 };
+
+                const categoryTotals = computed(() => {
+                    const cats = ['追隨✨', '吃吃🍡', '住宿🏨', '交通🚗', '剁手🎀', '其他🔍'];
+                    const res = {};
+                    cats.forEach(c => {
+                        res[c] = categoryTotal(c);
+                    });
+                    return res;
+                });
+
+                // 畫圓餅圖邏輯
+                const drawChart = () => {
+                    nextTick(() => {
+                        const canvas = document.getElementById('expenseChart');
+                        if (!canvas) return;
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        const data = categoryTotals.value;
+                        const total = totalTwd.value;
+
+                        const colors = ['#f7cac9', '#b2ceed', '#ffeaa7', '#dfe6e9', '#fab1a0', '#74b9ff'];
+                        let startAngle = 0;
+
+                        if (total === 0) {
+                            // 沒資料時畫灰色圓餅
+                            ctx.beginPath();
+                            ctx.arc(120, 120, 90, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#e2e8f0';
+                            ctx.fill();
+                            ctx.fillStyle = '#94a3b8';
+                            ctx.font = '12px Noto Sans TC';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('尚無花費資料', 120, 125);
+                            return;
+                        }
+
+                        let i = 0;
+                        for (let cat in data) {
+                            const val = data[cat];
+                            if (val > 0) {
+                                const sliceAngle = (val / total) * 2 * Math.PI;
+                                ctx.beginPath();
+                                ctx.moveTo(120, 120);
+                                ctx.arc(120, 120, 90, startAngle, startAngle + sliceAngle);
+                                ctx.closePath();
+                                ctx.fillStyle = colors[i % colors.length];
+                                ctx.fill();
+                                startAngle += sliceAngle;
+                            }
+                            i++;
+                        }
+                    });
+                };
+
+                // 當切換到圓餅圖分頁時重新繪製
+                watch(currentTab, (newTab) => {
+                    if (newTab === 'chart') {
+                        drawChart();
+                    }
+                });
 
                 const addExpense = () => {
                     if (!newExpense.value.content || !newExpense.value.twdAmt) {
@@ -367,6 +453,7 @@
                     saveFlightInfo,
                     totalTwd,
                     categoryTotal,
+                    categoryTotals,
                     addExpense,
                     deleteExpense,
                     checklist,
