@@ -75,6 +75,7 @@
                 <div class="text-3xl font-bold tracking-wide mt-1 text-slate-900">NT$ {{ totalTwd.toLocaleString() }}</div>
                 <div class="mt-4 pt-3 border-t border-[#b8d0fc] flex flex-wrap justify-between gap-2 text-xs text-slate-700 font-bold">
                     <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
+                    <span>門票: NT$ {{ categoryTotal('門票🎫') }}</span>
                     <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
                     <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
                 </div>
@@ -89,6 +90,7 @@
                     <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
                     <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
                         <option value="追隨✨">追隨✨</option>
+                        <option value="門票🎫">門票🎫</option>
                         <option value="吃吃🍡">吃吃🍡</option>
                         <option value="住宿🏨">住宿🏨</option>
                         <option value="交通🚗">交通🚗</option>
@@ -271,9 +273,10 @@
                 const filterCategory = ref('');
                 const filterDate = ref('');
 
-                // 分類專屬顏色對應表
+                // 分類專屬顏色對應表（已包含門票🎫）
                 const categoryColors = {
                     '追隨✨': '#f7cac9', // 克拉粉
+                    '門票🎫': '#ffb8b8', // 柔粉紅
                     '吃吃🍡': '#ffeaa7', // 鵝黃色
                     '住宿🏨': '#b2ceed', // 克拉藍
                     '交通🚗': '#dfe6e9', // 淺灰藍
@@ -410,7 +413,6 @@
                     return res;
                 });
 
-                // 篩選後的明細清單
                 const filteredExpenses = computed(() => {
                     return expenses.value.filter(item => {
                         const matchCat = filterCategory.value ? item.category === filterCategory.value : true;
@@ -419,7 +421,6 @@
                     });
                 });
 
-                // 畫圓餅圖邏輯（對應專屬顏色）
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
