@@ -133,7 +133,7 @@
             </div>
         </div>
 
-        <!-- 畫面 B：圓餅圖與明細（附帶篩選器） -->
+        <!-- 畫面 B：圓餅圖與明細（附帶月份篩選器） -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
             <!-- 圓餅圖區塊 -->
             <div class="money-card rounded-2xl p-5 text-center space-y-4">
@@ -167,9 +167,9 @@
                             <option value="">所有分類</option>
                             <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
                         </select>
-                        <!-- 日期搜尋 -->
-                        <input type="date" v-model="filterDate" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-700 focus:outline-none">
-                        <button @click="filterCategory = ''; filterDate = ''" class="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"><i class="fa-solid fa-rotate-right"></i></button>
+                        <!-- 月份篩選 (YYYY-MM) -->
+                        <input type="month" v-model="filterMonth" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-700 focus:outline-none">
+                        <button @click="filterCategory = ''; filterMonth = ''" class="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"><i class="fa-solid fa-rotate-right"></i></button>
                     </div>
                 </div>
 
@@ -269,19 +269,19 @@
                 const expenses = ref([]);
                 const flightInfo = ref({ dep: '', ret: '' });
 
-                // 篩選器狀態
+                // 篩選器狀態 (改成月份篩選 filterMonth)
                 const filterCategory = ref('');
-                const filterDate = ref('');
+                const filterMonth = ref('');
 
-                // 分類專屬顏色對應表（已包含門票🎫）
+                // 更新後的分類專屬顏色對應表
                 const categoryColors = {
-                    '追隨✨': '#f7cac9', // 克拉粉
-                    '門票🎫': '#ffb8b8', // 柔粉紅
-                    '吃吃🍡': '#ffeaa7', // 鵝黃色
-                    '住宿🏨': '#b2ceed', // 克拉藍
-                    '交通🚗': '#dfe6e9', // 淺灰藍
-                    '剁手🎀': '#fab1a0', // 蜜桃橘
-                    '其他🔍': '#a29bfe'  // 柔霧紫
+                    '門票🎫': '#A8DADC',
+                    '追隨✨': '#92A8D1',
+                    '交通🚗': '#F3E3B6',
+                    '吃吃🍡': '#F4A261',
+                    '住宿🏨': '#B7E4C7',
+                    '剁手🎀': '#D8B4E2',
+                    '其他🔍': '#D8D8D8'
                 };
 
                 const newExpense = ref({
@@ -413,11 +413,13 @@
                     return res;
                 });
 
+                // 篩選邏輯：支援分類與月份 (YYYY-MM) 篩選
                 const filteredExpenses = computed(() => {
                     return expenses.value.filter(item => {
                         const matchCat = filterCategory.value ? item.category === filterCategory.value : true;
-                        const matchDate = filterDate.value ? item.date === filterDate.value : true;
-                        return matchCat && matchDate;
+                        // item.date 格式為 YYYY-MM-DD，比對前7個字元 (YYYY-MM) 即可
+                        const matchMonth = filterMonth.value ? item.date.startsWith(filterMonth.value) : true;
+                        return matchCat && matchMonth;
                     });
                 });
 
@@ -518,7 +520,7 @@
                     categoryTotals,
                     categoryColors,
                     filterCategory,
-                    filterDate,
+                    filterMonth,
                     filteredExpenses,
                     addExpense,
                     deleteExpense,
