@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- FontAwesome setIcon -->
+    <!-- FontAwesome icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -18,7 +18,7 @@
             <h1 class="text-2xl font-bold text-pink-600 flex items-center justify-center gap-2">
                 <span>✨</span> 追夢之旅 Dream Trip <span>💎</span>
             </h1>
-            <p class="text-sm text-slate-500 mt-1">演唱會花費記帳 & 行李清單</p>
+            <p class="text-sm text-slate-500 mt-1">演唱會花費記帳 & 行李清單 (☁️ 雲端同步中)</p>
         </header>
 
         <!-- 導覽頁籤 -->
@@ -39,9 +39,9 @@
         <div v-show="currentTab === 'expense'" class="space-y-6">
             <!-- 總金額卡片 -->
             <div class="bg-gradient-to-r from-pink-500 to-rose-400 rounded-2xl p-5 text-white shadow-lg">
-                <div class="text-sm opacity-90">總花費台幣</div>
+                <div class="text-sm opacity-95">總花費台幣</div>
                 <div class="text-3xl font-extrabold mt-1">NT$ {{ totalTwd.toLocaleString() }}</div>
-                <div class="mt-4 pt-3 border-t border-white/20 flex justify-between text-xs opacity-90">
+                <div class="mt-4 pt-3 border-t border-white/20 flex justify-between text-xs opacity-95">
                     <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
                     <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
                     <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
@@ -116,7 +116,7 @@
                 </h3>
                 <div class="space-y-2 pt-1">
                     <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
-                        <input type="checkbox" v-model="item.checked" class="w-4 h-4 text-pink-500 rounded border-slate-300 focus:ring-pink-400">
+                        <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 text-pink-500 rounded border-slate-300 focus:ring-pink-400">
                         <span :class="item.checked ? 'line-through text-slate-400' : 'text-slate-700'" class="text-sm font-medium">{{ item.name }}</span>
                     </label>
                 </div>
@@ -124,18 +124,32 @@
         </div>
     </div>
 
-    <!-- Vue 邏輯 -->
-    <script>
+    <!-- Vue 與 Firebase 邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAb3KLLcrsBzF9GCBL9VN5H3A5olklgxBQ",
+            authDomain: "dreamchaser-e1053.firebaseapp.com",
+            databaseURL: "https://dreamchaser-e1053-default-rtdb.firebaseio.com",
+            projectId: "dreamchaser-e1053",
+            storageBucket: "dreamchaser-e1053.firebasestorage.app",
+            messagingSenderId: "95075536532",
+            appId: "1:95075536532:web:ccbd810271c69c1ecfee81",
+            measurementId: "G-YP10V8VCER"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
         const { createApp, ref, computed, onMounted } = Vue;
+
         createApp({
             setup() {
                 const currentTab = ref('expense');
                 
-                // 記帳資料
-                const expenses = ref([
-                    { date: '2026-06-20', category: '追隨✨', content: 'SEVENTEEN 門票', foreignAmt: 0, twdAmt: 2778 },
-                    { date: '2026-06-02', category: '交通🚗', content: '桃園<->仁川機票', foreignAmt: 0, twdAmt: 8705 }
-                ]);
+                const expenses = ref([]);
 
                 const newExpense = ref({
                     date: new Date().toISOString().split('T')[0],
@@ -145,33 +159,8 @@
                     twdAmt: null
                 });
 
-                const totalTwd = computed(() => {
-                    return expenses.value.reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
-                });
-
-                const categoryTotal = (cat) => {
-                    return expenses.value.filter(i => i.category === cat).reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
-                };
-
-                const addExpense = () => {
-                    if (!newExpense.value.content || !newExpense.value.twdAmt) {
-                        alert('請填寫內容與台幣金額唷！');
-                        return;
-                    }
-                    expenses.value.unshift({ ...newExpense.value });
-                    newExpense.value.content = '';
-                    newExpense.value.foreignAmt = null;
-                    newExpense.value.twdAmt = null;
-                    saveToLocalStorage();
-                };
-
-                const deleteExpense = (index) => {
-                    expenses.value.splice(index, 1);
-                    saveToLocalStorage();
-                };
-
-                // 行李清單資料（完整對應試算表行李check頁面）
-                const checklist = ref({
+                // 預設行李清單結構
+                const defaultChecklist = {
                     '👜 隨身包與重要證件': [
                         { name: '★錢包 (台幣/外幣/信用卡/交通卡)', checked: false },
                         { name: '★護照', checked: false },
@@ -246,7 +235,60 @@
                         { name: '護墊 / 衛生棉 / 棉條', checked: false },
                         { name: '口罩', checked: false }
                     ]
+                };
+
+                const checklist = ref(defaultChecklist);
+
+                // 從 Firebase 即時同步資料
+                onMounted(() => {
+                    const expRef = dbRef(database, 'expenses');
+                    onValue(expRef, (snapshot) => {
+                        const data = snapshot.val();
+                        expenses.value = data ? Object.values(data) : [];
+                    });
+
+                    const checkRef = dbRef(database, 'checklist');
+                    onValue(checkRef, (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            checklist.value = data;
+                        } else {
+                            // 若雲端尚無資料，則初始化寫入預設清單
+                            set(checkRef, defaultChecklist);
+                        }
+                    });
                 });
+
+                const totalTwd = computed(() => {
+                    return expenses.value.reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
+                });
+
+                const categoryTotal = (cat) => {
+                    return expenses.value.filter(i => i.category === cat).reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
+                };
+
+                const addExpense = () => {
+                    if (!newExpense.value.content || !newExpense.value.twdAmt) {
+                        alert('請填寫內容與台幣金額唷！');
+                        return;
+                    }
+                    expenses.value.unshift({ ...newExpense.value });
+                    // 同步寫入 Firebase
+                    set(dbRef(database, 'expenses'), expenses.value);
+
+                    newExpense.value.content = '';
+                    newExpense.value.foreignAmt = null;
+                    newExpense.value.twdAmt = null;
+                };
+
+                const deleteExpense = (index) => {
+                    expenses.value.splice(index, 1);
+                    set(dbRef(database, 'expenses'), expenses.value);
+                };
+
+                const saveChecklist = () => {
+                    set(dbRef(database, 'checklist'), checklist.value);
+                };
 
                 const totalChecklistCount = computed(() => {
                     let count = 0;
@@ -262,18 +304,6 @@
                     return count;
                 });
 
-                const saveToLocalStorage = () => {
-                    localStorage.setItem('dream_trip_expenses', JSON.stringify(expenses.value));
-                    localStorage.setItem('dream_trip_checklist', JSON.stringify(checklist.value));
-                };
-
-                onMounted(() => {
-                    const savedExp = localStorage.getItem('dream_trip_expenses');
-                    if (savedExp) expenses.value = JSON.parse(savedExp);
-                    const savedCheck = localStorage.getItem('dream_typed_checklist') || localStorage.getItem('dream_trip_checklist');
-                    if (savedCheck) checklist.value = JSON.parse(savedCheck);
-                });
-
                 return {
                     currentTab,
                     expenses,
@@ -283,6 +313,7 @@
                     addExpense,
                     deleteExpense,
                     checklist,
+                    saveChecklist,
                     totalChecklistCount,
                     checkedCount
                 };
