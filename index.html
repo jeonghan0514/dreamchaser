@@ -36,10 +36,6 @@
         .money-btn:hover {
             background-color: #f2b8b6;
         }
-        .money-tag {
-            background-color: #f7cac9;
-            color: #594a4a;
-        }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -52,7 +48,7 @@
             <p class="text-xs tracking-widest text-slate-400 uppercase mt-1 font-medium">Concert & Trip Expense Manager</p>
         </header>
 
-        <!-- 導覽頁籤（新增圓餅圖分頁） -->
+        <!-- 導覽頁籤 -->
         <div class="flex money-card rounded-2xl p-1.5 mb-6">
             <button @click="currentTab = 'expense'" 
                 :class="currentTab === 'expense' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
@@ -62,7 +58,7 @@
             <button @click="currentTab = 'chart'" 
                 :class="currentTab === 'chart' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
                 class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-chart-pie"></i> 花費圓餅圖
+                <i class="fa-solid fa-chart-pie"></i> 圓餅圖與明細
             </button>
             <button @click="currentTab = 'checklist'" 
                 :class="currentTab === 'checklist' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
@@ -119,7 +115,9 @@
                 <div v-for="(item, index) in expenses" :key="index" class="money-card p-4 rounded-2xl flex justify-between items-center">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs px-2.5 py-0.5 money-tag rounded-full font-bold">{{ item.category }}</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold text-slate-800" :style="{ backgroundColor: categoryColors[item.category] || '#edf2f7' }">
+                                {{ item.category }}
+                            </span>
                             <span class="text-xs text-slate-400 font-medium">{{ item.date }}</span>
                         </div>
                         <div class="font-bold text-slate-800 mt-2 text-sm">{{ item.content }}</div>
@@ -133,8 +131,9 @@
             </div>
         </div>
 
-        <!-- 畫面 B：花費圓餅圖分析 -->
+        <!-- 畫面 B：圓餅圖與明細（附帶篩選器） -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
+            <!-- 圓餅圖區塊 -->
             <div class="money-card rounded-2xl p-5 text-center space-y-4">
                 <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f7cac9]"></i> 各分類花費佔比
@@ -142,11 +141,55 @@
                 <div class="flex justify-center">
                     <canvas id="expenseChart" width="240" height="240" class="max-w-full"></canvas>
                 </div>
-                <!-- 分類金額清單 -->
+                <!-- 分類金額與專屬顏色標籤 -->
                 <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 text-left text-xs">
-                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2 rounded-xl bg-slate-50">
-                        <span class="font-bold text-slate-700">{{ cat }}</span>
+                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full inline-block" :style="{ backgroundColor: categoryColors[cat] }"></span>
+                            <span class="font-bold text-slate-700">{{ cat }}</span>
+                        </div>
                         <span class="font-medium text-slate-600">NT$ {{ amt.toLocaleString() }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 篩選器與明細列表區塊 -->
+            <div class="money-card rounded-2xl p-4 space-y-3">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pb-2 border-b border-slate-100">
+                    <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-[#f7cac9]"></i> 花費明細篩選
+                    </h2>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <!-- 分類篩選 -->
+                        <select v-model="filterCategory" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-700 focus:outline-none">
+                            <option value="">所有分類</option>
+                            <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
+                        </select>
+                        <!-- 日期搜尋 -->
+                        <input type="date" v-model="filterDate" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-700 focus:outline-none">
+                        <button @click="filterCategory = ''; filterDate = ''" class="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- 篩選後的明細清單 -->
+                <div class="space-y-2 pt-1">
+                    <div v-if="filteredExpenses.length === 0" class="text-center py-8 text-slate-400 text-xs">
+                        沒有符合條件的花費記錄唷 🔍
+                    </div>
+                    <div v-for="(item, index) in filteredExpenses" :key="index" class="p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold text-slate-800" :style="{ backgroundColor: categoryColors[item.category] || '#edf2f7' }">
+                                    {{ item.category }}
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-medium">{{ item.date }}</span>
+                            </div>
+                            <div class="font-bold text-slate-800 mt-1 text-xs">{{ item.content }}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-slate-900 text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
+                            <div v-if="item.foreignAmt" class="text-[10px] text-slate-400">外幣: {{ item.foreignAmt }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -182,7 +225,7 @@
                 </div>
             </div>
 
-            <!-- 清單分類（雙欄排版） -->
+            <!-- 清單分類 -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card rounded-2xl p-4 space-y-2">
                 <h3 class="font-bold text-slate-700 text-sm tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-gem text-[#f7cac9]"></i> {{ groupName }}
@@ -223,6 +266,20 @@
                 const currentTab = ref('expense');
                 const expenses = ref([]);
                 const flightInfo = ref({ dep: '', ret: '' });
+
+                // 篩選器狀態
+                const filterCategory = ref('');
+                const filterDate = ref('');
+
+                // 分類專屬顏色對應表
+                const categoryColors = {
+                    '追隨✨': '#f7cac9', // 克拉粉
+                    '吃吃🍡': '#ffeaa7', // 鵝黃色
+                    '住宿🏨': '#b2ceed', // 克拉藍
+                    '交通🚗': '#dfe6e9', // 淺灰藍
+                    '剁手🎀': '#fab1a0', // 蜜桃橘
+                    '其他🔍': '#a29bfe'  // 柔霧紫
+                };
 
                 const newExpense = ref({
                     date: new Date().toISOString().split('T')[0],
@@ -345,7 +402,7 @@
                 };
 
                 const categoryTotals = computed(() => {
-                    const cats = ['追隨✨', '吃吃🍡', '住宿🏨', '交通🚗', '剁手🎀', '其他🔍'];
+                    const cats = Object.keys(categoryColors);
                     const res = {};
                     cats.forEach(c => {
                         res[c] = categoryTotal(c);
@@ -353,7 +410,16 @@
                     return res;
                 });
 
-                // 畫圓餅圖邏輯
+                // 篩選後的明細清單
+                const filteredExpenses = computed(() => {
+                    return expenses.value.filter(item => {
+                        const matchCat = filterCategory.value ? item.category === filterCategory.value : true;
+                        const matchDate = filterDate.value ? item.date === filterDate.value : true;
+                        return matchCat && matchDate;
+                    });
+                });
+
+                // 畫圓餅圖邏輯（對應專屬顏色）
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -364,11 +430,9 @@
                         const data = categoryTotals.value;
                         const total = totalTwd.value;
 
-                        const colors = ['#f7cac9', '#b2ceed', '#ffeaa7', '#dfe6e9', '#fab1a0', '#74b9ff'];
                         let startAngle = 0;
 
                         if (total === 0) {
-                            // 沒資料時畫灰色圓餅
                             ctx.beginPath();
                             ctx.arc(120, 120, 90, 0, 2 * Math.PI);
                             ctx.fillStyle = '#e2e8f0';
@@ -380,7 +444,6 @@
                             return;
                         }
 
-                        let i = 0;
                         for (let cat in data) {
                             const val = data[cat];
                             if (val > 0) {
@@ -389,16 +452,14 @@
                                 ctx.moveTo(120, 120);
                                 ctx.arc(120, 120, 90, startAngle, startAngle + sliceAngle);
                                 ctx.closePath();
-                                ctx.fillStyle = colors[i % colors.length];
+                                ctx.fillStyle = categoryColors[cat] || '#cbd5e1';
                                 ctx.fill();
                                 startAngle += sliceAngle;
                             }
-                            i++;
                         }
                     });
                 };
 
-                // 當切換到圓餅圖分頁時重新繪製
                 watch(currentTab, (newTab) => {
                     if (newTab === 'chart') {
                         drawChart();
@@ -454,6 +515,10 @@
                     totalTwd,
                     categoryTotal,
                     categoryTotals,
+                    categoryColors,
+                    filterCategory,
+                    filterDate,
+                    filteredExpenses,
                     addExpense,
                     deleteExpense,
                     checklist,
