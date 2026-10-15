@@ -15,46 +15,47 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #ffffff; /* 乾淨純白背景 */
+            background-color: #ffffff; /* 乾淨純白大背景 */
             color: #2c3e50;
         }
-        /* 精緻卡片設計 */
+        /* 大面積使用你給的 #d2e1fd 填滿，邊框用深一點的質感藍 #a6c4f7 */
         .poster-card {
-            background: #ffffff;
-            border: 1px solid #d2e1fd;
-            box-shadow: 0 4px 20px rgba(210, 225, 253, 0.4);
-        }
-        /* 自定義 #d2e1fd 主色相關樣式 */
-        .bg-custom-blue {
             background-color: #d2e1fd;
+            border: 1px solid #a6c4f7;
+            box-shadow: 0 4px 15px rgba(166, 196, 247, 0.25);
         }
-        .text-custom-blue {
-            color: #4a77c2;
+        /* 按鈕與重點字色：使用深一點的質感藍色 */
+        .brand-text {
+            color: #3b65b8;
         }
-        .border-custom-blue {
-            border-color: #d2e1fd;
+        .brand-btn {
+            background-color: #4873cb;
+            color: #ffffff;
+        }
+        .brand-btn:hover {
+            background-color: #3b60b0;
         }
     </style>
 </head>
 <body class="min-h-screen pb-24">
     <div id="app" class="max-w-md mx-auto p-4">
-        <!-- 頂部標題：海報同款 #d2e1fd 柔和藍色系 -->
+        <!-- 頂部標題 -->
         <header class="text-center py-6">
-            <h1 class="text-2xl font-light tracking-[0.2em] text-[#5682d3] flex items-center justify-center gap-2">
-                <span class="text-[#8cb3ed]">✨</span> DREAMING <span class="text-[#8cb3ed]">💎</span>
+            <h1 class="text-2xl font-light tracking-[0.2em] brand-text flex items-center justify-center gap-2">
+                <span>✨</span> DREAMING <span>💎</span>
             </h1>
-            <p class="text-[11px] tracking-widest text-[#799bdf] uppercase mt-1 font-light">Jeonghan x Joshua Journey Into Dreaming</p>
+            <p class="text-[11px] tracking-widest text-slate-400 uppercase mt-1 font-light">Jeonghan x Joshua Journey Into Dreaming</p>
         </header>
 
-        <!-- 導覽頁籤 -->
-        <div class="flex bg-[#f3f7fe] rounded-2xl p-1 mb-6 border border-[#d2e1fd]">
+        <!-- 導覽頁籤：大面積填滿 #d2e1fd -->
+        <div class="flex bg-[#d2e1fd] rounded-2xl p-1 mb-6 border border-[#a6c4f7]">
             <button @click="currentTab = 'expense'" 
-                :class="currentTab === 'expense' ? 'bg-[#5682d3] text-white shadow-md shadow-[#d2e1fd]' : 'text-[#5682d3] hover:text-[#35589c]'"
+                :class="currentTab === 'expense' ? 'brand-btn shadow-md' : 'brand-text hover:bg-white/50'"
                 class="flex-1 py-2.5 rounded-xl font-medium text-xs tracking-wider transition-all flex items-center justify-center gap-2">
                 <i class="fa-solid fa-wallet"></i> 花費記帳
             </button>
             <button @click="currentTab = 'checklist'" 
-                :class="currentTab === 'checklist' ? 'bg-[#5682d3] text-white shadow-md shadow-[#d2e1fd]' : 'text-[#5682d3] hover:text-[#35589c]'"
+                :class="currentTab === 'checklist' ? 'brand-btn shadow-md' : 'brand-text hover:bg-white/50'"
                 class="flex-1 py-2.5 rounded-xl font-medium text-xs tracking-wider transition-all flex items-center justify-center gap-2">
                 <i class="fa-solid fa-suitcase"></i> 行李清單
             </button>
@@ -62,8 +63,8 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-5">
-            <!-- 總金額卡片：#d2e1fd 柔和藍漸層 -->
-            <div class="bg-gradient-to-br from-[#4a77c2] via-[#6193e6] to-[#3a61a0] rounded-2xl p-5 text-white shadow-xl shadow-[#d2e1fd]/50 relative overflow-hidden">
+            <!-- 總金額卡片 -->
+            <div class="bg-gradient-to-br from-[#4873cb] via-[#5984dc] to-[#3a5fb0] rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <div class="text-xs tracking-wider text-blue-100/90 font-light">總花費台幣 (Total Expenses)</div>
                 <div class="text-3xl font-light tracking-wide mt-1 text-white">NT$ {{ totalTwd.toLocaleString() }}</div>
@@ -74,14 +75,14 @@
                 </div>
             </div>
 
-            <!-- 新增花費表單 -->
+            <!-- 新增花費表單：大面積填滿 #d2e1fd -->
             <div class="poster-card rounded-2xl p-4 space-y-3">
-                <h2 class="font-medium text-[#4a77c2] text-xs tracking-wider uppercase flex items-center gap-2">
-                    <i class="fa-solid fa-circle-plus text-[#5682d3]"></i> 新增一筆花費
+                <h2 class="font-medium brand-text text-xs tracking-wider uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus"></i> 新增一筆花費
                 </h2>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="date" v-model="newExpense.date" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#5682d3]">
-                    <select v-model="newExpense.category" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#5682d3]">
+                    <input type="date" v-model="newExpense.date" class="bg-white/90 border border-[#a6c4f7] rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#4873cb]">
+                    <select v-model="newExpense.category" class="bg-white/90 border border-[#a6c4f7] rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:border-[#4873cb]">
                         <option value="追隨✨">追隨✨</option>
                         <option value="吃吃🍡">吃吃🍡</option>
                         <option value="住宿🏨">住宿🏨</option>
@@ -90,12 +91,12 @@
                         <option value="其他🔍">其他🔍</option>
                     </select>
                 </div>
-                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#5682d3]">
+                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-white/90 border border-[#a6c4f7] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#4873cb]">
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#5682d3]">
-                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-[#f8fbff] border border-[#d2e1fd] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#5682d3]">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" class="bg-white/90 border border-[#a6c4f7] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#4873cb]">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" class="bg-white/90 border border-[#a6c4f7] rounded-xl p-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#4873cb]">
                 </div>
-                <button @click="addExpense" class="w-full bg-[#5682d3] hover:bg-[#466eba] text-white font-medium py-2.5 rounded-xl text-xs tracking-wider shadow-md shadow-[#d2e1fd] transition-all">
+                <button @click="addExpense" class="w-full brand-btn font-medium py-2.5 rounded-xl text-xs tracking-wider shadow-md transition-all">
                     新增花費
                 </button>
             </div>
@@ -103,21 +104,21 @@
             <!-- 花費列表 -->
             <div class="space-y-2">
                 <h2 class="font-medium text-slate-600 text-xs tracking-wider px-1 uppercase">花費明細</h2>
-                <div v-if="expenses.length === 0" class="text-center py-10 text-slate-400 text-xs poster-card rounded-2xl">
+                <div v-if="expenses.length === 0" class="text-center py-10 text-slate-500 text-xs poster-card rounded-2xl">
                     目前還沒有記帳資料唷 ✨
                 </div>
                 <div v-for="(item, index) in expenses" :key="index" class="poster-card p-3.5 rounded-2xl flex justify-between items-center">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] px-2 py-0.5 bg-[#f3f7fe] text-[#4a77c2] border border-[#d2e1fd] rounded-full font-medium">{{ item.category }}</span>
-                            <span class="text-[10px] text-slate-400">{{ item.date }}</span>
+                            <span class="text-[10px] px-2 py-0.5 bg-white/80 brand-text border border-[#a6c4f7] rounded-full font-medium">{{ item.category }}</span>
+                            <span class="text-[10px] text-slate-500">{{ item.date }}</span>
                         </div>
                         <div class="font-normal text-slate-800 mt-1.5 text-xs">{{ item.content }}</div>
                     </div>
                     <div class="text-right">
-                        <div class="font-semibold text-[#4a77c2] text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
-                        <div v-if="item.foreignAmt" class="text-[10px] text-slate-400 mt-0.5">外幣: {{ item.foreignAmt }}</div>
-                        <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                        <div class="font-semibold brand-text text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
+                        <div v-if="item.foreignAmt" class="text-[10px] text-slate-500 mt-0.5">外幣: {{ item.foreignAmt }}</div>
+                        <button @click="deleteExpense(index)" class="text-slate-400 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             </div>
@@ -128,21 +129,21 @@
             <div class="poster-card rounded-2xl p-4 flex justify-between items-center">
                 <div>
                     <h2 class="font-medium text-slate-700 text-xs tracking-wider">行李準備進度</h2>
-                    <p class="text-[10px] text-slate-400 mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
                 </div>
-                <div class="w-11 h-11 rounded-full bg-[#f3f7fe] border border-[#d2e1fd] flex items-center justify-center text-[#4a77c2] font-medium text-xs">
+                <div class="w-11 h-11 rounded-full bg-white/80 border border-[#a6c4f7] flex items-center justify-center brand-text font-medium text-xs">
                     {{ Math.round((checkedCount / (totalChecklistCount || 1)) * 100) }}%
                 </div>
             </div>
 
-            <!-- 清單分類 -->
+            <!-- 清單分類：大面積填滿 #d2e1fd -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="poster-card rounded-2xl p-4 space-y-2">
-                <h3 class="font-medium text-[#4a77c2] text-xs tracking-wider border-b border-[#f3f7fe] pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-sparkles text-[#5682d3]"></i> {{ groupName }}
+                <h3 class="font-medium brand-text text-xs tracking-wider border-b border-[#a6c4f7]/50 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-sparkles"></i> {{ groupName }}
                 </h3>
                 <div class="space-y-1 pt-1">
-                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-xl hover:bg-[#f8fbff] transition-all cursor-pointer">
-                        <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#5682d3] rounded border-slate-300 focus:ring-0">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 transition-all cursor-pointer">
+                        <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#4873cb] rounded border-[#a6c4f7] focus:ring-0">
                         <span :class="item.checked ? 'line-through text-slate-400' : 'text-slate-700'" class="text-xs font-light">{{ item.name }}</span>
                     </label>
                 </div>
