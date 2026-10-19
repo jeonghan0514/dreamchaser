@@ -140,14 +140,14 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 帶外圍引線與百分比的甜甜圈環狀圖區塊 -->
+            <!-- 寬敞且字體清晰的甜甜圈環狀圖區塊 -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比 (環狀分析)
                 </h2>
-                <!-- 放大畫布空間以容納外圍引線文字 -->
+                <!-- 加大畫布寬高 (420x300)，確保四周引線與大字體絕不被切到 -->
                 <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" width="340" height="260" class="max-w-full"></canvas>
+                    <canvas id="expenseChart" width="420" height="300" class="max-w-full"></canvas>
                 </div>
                 <!-- 分類金額與百分比列表 -->
                 <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
@@ -473,7 +473,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 繪製帶有引線與百分比的甜甜圈環狀圖
+                // 繪製加大空間、清晰大字體的甜甜圈環狀圖
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -486,7 +486,7 @@
 
                         const centerX = canvas.width / 2;
                         const centerY = canvas.height / 2;
-                        const outerRadius = 75;
+                        const outerRadius = 75; // 圓餅大小適中，預留充足四周空間
                         const innerRadius = 40;
 
                         if (total === 0) {
@@ -496,7 +496,7 @@
                             ctx.fillStyle = '#e2e8f0';
                             ctx.fill();
                             ctx.fillStyle = '#52796f';
-                            ctx.font = '12px Noto Sans TC';
+                            ctx.font = '13px Noto Sans TC';
                             ctx.textAlign = 'center';
                             ctx.fillText('尚無花費資料', centerX, centerY + 4);
                             return;
@@ -520,18 +520,18 @@
                                 ctx.strokeStyle = '#ffffff';
                                 ctx.stroke();
 
-                                // 2. 繪製外圍引線與文字
+                                // 2. 繪製外圍引線與清晰大字體
                                 const midAngle = startAngle + sliceAngle / 2;
                                 const percent = ((val / total) * 100).toFixed(1);
 
                                 if (Number(percent) > 0) {
                                     const x1 = centerX + outerRadius * Math.cos(midAngle);
                                     const y1 = centerY + outerRadius * Math.sin(midAngle);
-                                    const lineLen = 18;
+                                    const lineLen = 35; // 增長引線長度，徹底避免切到
                                     const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
                                     const y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
                                     const isRight = Math.cos(midAngle) >= 0;
-                                    const x3 = x2 + (isRight ? 12 : -12);
+                                    const x3 = x2 + (isRight ? 18 : -18);
                                     const y3 = y2;
 
                                     // 引線
@@ -539,16 +539,16 @@
                                     ctx.moveTo(x1, y1);
                                     ctx.lineTo(x2, y2);
                                     ctx.lineTo(x3, y3);
-                                    ctx.lineWidth = 1;
-                                    ctx.strokeStyle = '#8ca89b';
+                                    ctx.lineWidth = 1.2;
+                                    ctx.strokeStyle = '#729c85';
                                     ctx.stroke();
 
-                                    // 文字
-                                    ctx.font = '10px Noto Sans TC';
+                                    // 清晰大字體 (12px 粗體)
+                                    ctx.font = 'bold 12px Noto Sans TC';
                                     ctx.fillStyle = '#2c4a3b';
                                     ctx.textAlign = isRight ? 'left' : 'right';
                                     ctx.textBaseline = 'middle';
-                                    ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 3 : -3), y3);
+                                    ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 5 : -5), y3);
                                 }
 
                                 startAngle = endAngle;
