@@ -140,14 +140,14 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 各分類花費佔比 (無括號乾淨標題) -->
+            <!-- 各分類花費佔比 (完美置中環狀圖) -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
-                <!-- 畫布 460x300，並透過置中確保左側有超大留白 -->
+                <!-- 畫布 440x300，中心點完美設在 220 也就是正中間 -->
                 <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" width="460" height="300" class="max-w-full"></canvas>
+                    <canvas id="expenseChart" width="440" height="300" class="max-w-full"></canvas>
                 </div>
                 <!-- 分類金額與百分比列表 -->
                 <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
@@ -164,11 +164,11 @@
                 </div>
             </div>
 
-            <!-- 篩選器與明細列表區塊 (無括號乾淨標題) -->
+            <!-- 篩選器與明細列表區塊 (標題改為「花費明細」) -->
             <div class="money-card p-4 space-y-3">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pb-2 border-b border-[#c8dcd0]">
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細篩選
+                        <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細
                     </h2>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <!-- 分類篩選 -->
@@ -473,7 +473,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 繪製中心向右微調、左側留白超充足的環狀圖
+                // 繪製完美置中的環狀圖
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -484,8 +484,8 @@
                         const data = categoryTotals.value;
                         const total = totalTwd.value;
 
-                        // 將圓餅中心點向右偏移 (centerX 設為 250，畫布寬 460)，左邊預留超大空間給「追隨✨」
-                        const centerX = 250;
+                        // 畫布寬 440，中心點完美落在 220 真正正中央
+                        const centerX = 220;
                         const centerY = canvas.height / 2;
                         const outerRadius = 75;
                         const innerRadius = 40;
