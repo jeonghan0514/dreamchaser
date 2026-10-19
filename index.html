@@ -164,7 +164,7 @@
                 </div>
             </div>
 
-            <!-- 篩選器與明細列表區塊 (標題改為「花費明細」) -->
+            <!-- 篩選器與明細列表區塊 (標題為「花費明細」) -->
             <div class="money-card p-4 space-y-3">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pb-2 border-b border-[#c8dcd0]">
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
@@ -287,7 +287,7 @@
                 const categoryColors = {
                     '門票🎫': '#fff4fb',
                     '追隨✨': '#d2e1fd',
-                    '交通🚗': '#F3E3B6',
+                    '交通🚗': '#fffbef', /* 已更新為指定顏色 */
                     '吃吃🍡': '#F4A261',
                     '住宿🏨': '#B7E4C7',
                     '剁手🎀': '#D8B4E2',
@@ -484,7 +484,7 @@
                         const data = categoryTotals.value;
                         const total = totalTwd.value;
 
-                        // 畫布寬 440，中心點完美落在 220 真正正中央
+                        // 畫布寬 440，中心點完美落在 220 正中央
                         const centerX = 220;
                         const centerY = canvas.height / 2;
                         const outerRadius = 75;
