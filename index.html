@@ -15,7 +15,6 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            /* 清新舒服的淡綠色背景 */
             background-color: #f2f7f4;
             color: #2c4a3b;
         }
@@ -26,16 +25,16 @@
             border-radius: 20px;
         }
         .money-total-card {
-            /* 克拉粉藍雙色漸層 (玫瑰石英粉 x 寧靜藍) */
-            background: linear-gradient(135deg, #fce4ec 0%, #e8f0fe 100%);
+            /* 柔和的克拉粉藍雙色漸層 */
+            background: linear-gradient(135deg, #fef2f4 0%, #e8f0fe 100%);
             border: 1px solid #d0e1fd;
             box-shadow: 0 6px 20px rgba(210, 225, 253, 0.4);
             border-radius: 20px;
         }
         .money-btn {
-            /* 克拉玫瑰粉按鈕 */
-            background: linear-gradient(135deg, #f7cac9 0%, #f2b8b6 100%);
-            color: #2c4a3b;
+            /* 改成超柔和的淡粉紅漸層 */
+            background: linear-gradient(135deg, #fae1e2 0%, #f4d0d2 100%);
+            color: #4a3b3d;
             font-weight: bold;
         }
         .money-btn:hover {
@@ -45,8 +44,8 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            color: #f7cac9;
-            filter: drop-shadow(0 2px 4px rgba(247, 202, 201, 0.4));
+            color: #f4d0d2;
+            filter: drop-shadow(0 2px 4px rgba(244, 208, 210, 0.4));
         }
     </style>
 </head>
@@ -81,7 +80,7 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
-            <!-- 總金額卡片 (克拉粉藍風) -->
+            <!-- 總金額卡片 -->
             <div class="money-total-card p-6 text-[#2c4a3b] flex justify-between items-center gap-4">
                 <div class="min-w-0">
                     <div class="text-xs tracking-wider text-[#457b9d] font-bold uppercase flex items-center gap-1.5">
@@ -130,7 +129,7 @@
                 <div class="space-y-2">
                     <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="onManualTwdInput" class="w-full bg-[#f7faf8] border border-[#d8e8de] rounded-2xl p-3 text-sm text-[#2c4a3b] placeholder-[#8ca89b] focus:outline-none focus:border-[#457b9d]">
                     <label class="flex items-center gap-2 cursor-pointer pt-1 px-1">
-                        <input type="checkbox" v-model="newExpense.isCreditCard" @change="onCardToggle" class="w-4 h-4 accent-[#f7cac9] rounded border-[#d8e8de] focus:ring-0">
+                        <input type="checkbox" v-model="newExpense.isCreditCard" @change="onCardToggle" class="w-4 h-4 accent-[#f4d0d2] rounded border-[#d8e8de] focus:ring-0">
                         <span class="text-xs text-[#52796f] font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
                     </label>
                 </div>
@@ -146,7 +145,7 @@
             <!-- 圓餅圖區塊 -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-chart-pie text-[#f7cac9]"></i> 各分類花費佔比
+                    <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
                 <div class="flex justify-center">
                     <canvas id="expenseChart" width="240" height="240" class="max-w-full"></canvas>
@@ -167,7 +166,7 @@
             <div class="money-card p-4 space-y-3">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pb-2 border-b border-[#e2ede6]">
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-[#f7cac9]"></i> 花費明細篩選 (由新到舊)
+                        <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細篩選 (由新到舊)
                     </h2>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <!-- 分類篩選 -->
@@ -211,7 +210,7 @@
             <!-- 航班資訊編輯卡片 -->
             <div class="money-card p-5 space-y-3">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-plane-departure text-[#f7cac9]"></i> 航班與行程資訊
+                    <i class="fa-solid fa-plane-departure text-[#f4d0d2]"></i> 航班與行程資訊
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
@@ -239,7 +238,7 @@
             <!-- 清單分類 -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card p-4 space-y-2">
                 <h3 class="font-bold text-[#2c4a3b] text-sm tracking-wider border-b border-[#e2ede6] pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-gem text-[#f7cac9]"></i> {{ groupName }}
+                    <i class="fa-solid fa-gem text-[#f4d0d2]"></i> {{ groupName }}
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-0.5">
                     <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-[#f7faf8] transition-all cursor-pointer">
@@ -284,7 +283,7 @@
                 let baseTwd = 0;
 
                 const categoryColors = {
-                    '門票🎫': '#fce4ec',
+                    '門票🎫': '#fef2f4',
                     '追隨✨': '#e8f0fe',
                     '交通🚗': '#fef3c7',
                     '吃吃🍡': '#ffedd5',
