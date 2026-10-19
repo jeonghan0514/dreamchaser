@@ -141,15 +141,15 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 圓餅圖區塊 -->
+            <!-- 甜甜圈環狀圖區塊 -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
+                    <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比 (環狀分析)
                 </h2>
-                <div class="flex justify-center">
-                    <canvas id="expenseChart" width="240" height="240" class="max-w-full"></canvas>
+                <div class="flex justify-center relative py-2">
+                    <canvas id="expenseChart" width="280" height="280" class="max-w-full"></canvas>
                 </div>
-                <!-- 分類金額、百分比與原本的專屬分類色系標籤 -->
+                <!-- 分類金額、百分比與專屬色系標籤 -->
                 <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
                     <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2.5 rounded-2xl bg-[#f7faf8] border border-[#c8dcd0]">
                         <div class="flex items-center gap-2 min-w-0">
@@ -233,7 +233,7 @@
                     <p class="text-xs text-[#52796f] font-medium mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
                 </div>
                 <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557]">
-                    {{ Math.round((checkedCount / (totalChecklistCount || 1)) * 100) }}%
+                    {{ Math.round((checkedCount / (totalChecklistCount || 1)) * 100) %>%
                 </div>
             </div>
 
@@ -284,7 +284,6 @@
                 const hideAmount = ref(false);
                 let baseTwd = 0;
 
-                // 完整保留妳原本喜歡的專屬分類色系
                 const categoryColors = {
                     '門票🎫': '#fff4fb',
                     '追隨✨': '#d2e1fd',
@@ -459,7 +458,6 @@
                     return res;
                 });
 
-                // 計算百分比
                 const getCategoryPercentage = (amt) => {
                     const total = totalTwd.value;
                     if (!total || total === 0) return 0;
@@ -475,6 +473,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
+                // 畫出帶有外圍引線與百分比的甜甜圈環狀圖
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -485,31 +484,77 @@
                         const data = categoryTotals.value;
                         const total = totalTwd.value;
 
-                        let startAngle = 0;
+                        const centerX = canvas.width / 2;
+                        const centerY = canvas.height / 2;
+                        const outerRadius = 80;
+                        const innerRadius = 45; // 甜甜圈中心空洞大小
 
                         if (total === 0) {
                             ctx.beginPath();
-                            ctx.arc(120, 120, 90, 0, 2 * Math.PI);
-                            ctx.fillStyle = '#c8dcd0';
+                            ctx.arc(centerX, centerY, outerRadius, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#f3e9d2';
                             ctx.fill();
                             ctx.fillStyle = '#52796f';
                             ctx.font = '12px Noto Sans TC';
                             ctx.textAlign = 'center';
-                            ctx.fillText('尚無花費資料', 120, 125);
+                            ctx.fillText('尚無花費資料', centerX, centerY + 4);
                             return;
                         }
 
+                        let startAngle = 0;
+
+                        // 1. 繪製甜甜圈扇形
                         for (let cat in data) {
                             const val = data[cat];
                             if (val > 0) {
                                 const sliceAngle = (val / total) * 2 * Math.PI;
+                                const endAngle = startAngle + sliceAngle;
+
                                 ctx.beginPath();
-                                ctx.moveTo(120, 120);
-                                ctx.arc(120, 120, 90, startAngle, startAngle + sliceAngle);
+                                ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
+                                ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
                                 ctx.closePath();
                                 ctx.fillStyle = categoryColors[cat] || '#cbd5e1';
                                 ctx.fill();
-                                startAngle += sliceAngle;
+                                ctx.lineWidth = 1;
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.stroke();
+
+                                // 計算每一塊中心點角度，用來畫引線與文字
+                                const midAngle = startAngle + sliceAngle / 2;
+                                const percent = ((val / total) * 100).toFixed(1);
+
+                                if (percent > 0) {
+                                    // 引線起點 (圓餅外緣)
+                                    const x1 = centerX + outerRadius * Math.cos(midAngle);
+                                    const y1 = centerY + outerRadius * Math.sin(midAngle);
+                                    // 折線轉折點
+                                    const lineLen = 22;
+                                    const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
+                                    const y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
+                                    // 文字對齊方向
+                                    const isRight = Math.cos(midAngle) >= 0;
+                                    const x3 = x2 + (isRight ? 15 : -15);
+                                    const y3 = y2;
+
+                                    // 繪製引線
+                                    ctx.beginPath();
+                                    ctx.moveTo(x1, y1);
+                                    ctx.lineTo(x2, y2);
+                                    ctx.lineTo(x3, y3);
+                                    ctx.lineWidth = 1;
+                                    ctx.strokeStyle = '#8ca89b';
+                                    ctx.stroke();
+
+                                    // 繪製文字 (分類名 + 百分比)
+                                    ctx.font = '11px Noto Sans TC';
+                                    ctx.fillStyle = '#2c4a3b';
+                                    ctx.textAlign = isRight ? 'left' : 'right';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 4 : -4), y3);
+                                }
+
+                                startAngle = endAngle;
                             }
                         }
                     });
