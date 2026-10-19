@@ -69,15 +69,33 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
-            <!-- 總金額卡片 -->
-            <div class="money-total-card rounded-2xl p-5 text-slate-800">
-                <div class="text-xs tracking-wider text-slate-600 font-bold">總花費金額 (Total)</div>
-                <div class="text-3xl font-bold tracking-wide mt-1 text-slate-900">NT$ {{ totalTwd.toLocaleString() }}</div>
-                <div class="mt-4 pt-3 border-t border-[#b8d0fc] flex flex-wrap justify-between gap-2 text-xs text-slate-700 font-bold">
-                    <span>追隨: NT$ {{ categoryTotal('追隨✨') }}</span>
-                    <span>門票: NT$ {{ categoryTotal('門票🎫') }}</span>
-                    <span>吃吃: NT$ {{ categoryTotal('吃吃🍡') }}</span>
-                    <span>交通: NT$ {{ categoryTotal('交通🚗') }}</span>
+            <!-- 總金額卡片 (支援隱藏金額與全新美化排版) -->
+            <div class="money-total-card rounded-2xl p-5 text-slate-800 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="text-xs tracking-wider text-slate-600 font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-coins text-slate-500"></i> 總花費金額 (Total)
+                    </div>
+                    <!-- 隱藏金額按鈕 -->
+                    <button @click="hideAmount = !hideAmount" class="text-slate-500 hover:text-slate-800 text-sm transition-colors">
+                        <i :class="hideAmount ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                    </button>
+                </div>
+                
+                <div class="text-3xl font-bold tracking-wide text-slate-900">
+                    {{ hideAmount ? 'NT$ ********' : 'NT$ ' + totalTwd.toLocaleString() }}
+                </div>
+
+                <!-- 各分類小卡清單 (精美網格排版，支援千分位與專屬顏色) -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3 border-t border-[#b8d0fc]">
+                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="bg-white/70 backdrop-blur-sm p-2.5 rounded-xl border border-[#b8d0fc]/50 flex flex-col justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" :style="{ backgroundColor: categoryColors[cat] }"></span>
+                            <span class="text-xs font-bold text-slate-700 truncate">{{ cat }}</span>
+                        </div>
+                        <div class="text-xs font-semibold text-slate-900 mt-1.5 text-right">
+                            {{ hideAmount ? '****' : 'NT$ ' + amt.toLocaleString() }}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -178,7 +196,7 @@
                         </div>
                         <div class="text-right">
                             <div class="font-bold text-slate-900 text-xs">NT$ {{ item.twdAmt?.toLocaleString() }}</div>
-                            <div v-if="item.foreignAmt" class="text-[10px] text-slate-400">外幣: {{ item.foreignAmt }} (匯率: {{ item.exchangeRate }})</div>
+                            <div v-if="item.foreignAmt" class="text-[10px] text-slate-400">外幣: {{ item.foreignAmt.toLocaleString() }} (匯率: {{ item.exchangeRate }})</div>
                             <button @click="deleteExpense(index)" class="text-slate-300 hover:text-red-500 text-xs mt-1 transition-colors"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
@@ -260,10 +278,12 @@
 
                 const filterCategory = ref('');
                 const filterMonth = ref('');
-                let baseTwd = 0; // 原始未加手續費的基底金額
+                const hideAmount = ref(false); // 總金額隱藏功能
+                let baseTwd = 0;
 
+                // 門票顏色已更新為 #fff4fb
                 const categoryColors = {
-                    '門票🎫': '#A8DADC',
+                    '門票🎫': '#fff4fb',
                     '追隨✨': '#d2e1fd',
                     '交通🚗': '#F3E3B6',
                     '吃吃🍡': '#F4A261',
@@ -282,7 +302,6 @@
                     isCreditCard: false
                 });
 
-                // 當輸入外幣或匯率時
                 const calcFromForeign = () => {
                     if (newExpense.value.foreignAmt && newExpense.value.exchangeRate) {
                         baseTwd = newExpense.value.foreignAmt * newExpense.value.exchangeRate;
@@ -290,32 +309,22 @@
                     }
                 };
 
-                // 當手動輸入台幣金額時
                 const onManualTwdInput = () => {
                     if (newExpense.value.twdAmt) {
-                        if (newExpense.value.isCreditCard) {
-                            // 如果當下是勾選刷卡狀態手動輸入，推算原未稅基底
-                            baseTwd = Number(newExpense.value.twdAmt) / 1.015;
-                        } else {
-                            baseTwd = Number(newExpense.value.twdAmt);
-                        }
+                        baseTwd = newExpense.value.isCreditCard ? Number(newExpense.value.twdAmt) / 1.015 : Number(newExpense.value.twdAmt);
                     } else {
                         baseTwd = 0;
                     }
                 };
 
-                // 當切換「刷卡」勾選框時
                 const onCardToggle = () => {
                     if (!newExpense.value.twdAmt && !newExpense.value.foreignAmt) return;
-                    
-                    // 如果還沒有抓到 baseTwd，先以目前輸入框的金額當作基底
                     if (baseTwd === 0 && newExpense.value.twdAmt) {
                         baseTwd = newExpense.value.isCreditCard ? Number(newExpense.value.twdAmt) / 1.015 : Number(newExpense.value.twdAmt);
                     }
                     applyFee();
                 };
 
-                // 套用手續費計算
                 const applyFee = () => {
                     if (baseTwd > 0) {
                         if (newExpense.value.isCreditCard) {
@@ -562,6 +571,7 @@
                     categoryColors,
                     filterCategory,
                     filterMonth,
+                    hideAmount,
                     filteredExpenses,
                     calcFromForeign,
                     onManualTwdInput,
