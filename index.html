@@ -23,10 +23,11 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
+        /* 改為柔和護眼的簡約質感白卡片，避免過多藍色造成視覺疲勞 */
         .money-total-card {
-            background-color: #d2e1fd;
-            border: 1px solid #b8d0fc;
-            box-shadow: 0 4px 15px rgba(210, 225, 253, 0.3);
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         }
         .money-btn {
             background-color: #f7cac9;
@@ -69,34 +70,20 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
-            <!-- 總金額卡片 (支援隱藏金額與全新美化排版) -->
-            <div class="money-total-card rounded-2xl p-5 text-slate-800 space-y-4">
-                <div class="flex justify-between items-center">
-                    <div class="text-xs tracking-wider text-slate-600 font-bold flex items-center gap-1.5">
-                        <i class="fa-solid fa-coins text-slate-500"></i> 總花費金額 (Total)
+            <!-- 總金額卡片 (精簡清爽版，支援鑽石隱藏與千分位逗號) -->
+            <div class="money-total-card rounded-2xl p-6 text-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="text-xs tracking-wider text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-coins text-[#f7cac9]"></i> 總花費金額 (Total)
                     </div>
-                    <!-- 隱藏金額按鈕 -->
-                    <button @click="hideAmount = !hideAmount" class="text-slate-500 hover:text-slate-800 text-sm transition-colors">
-                        <i :class="hideAmount ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                    </button>
-                </div>
-                
-                <div class="text-3xl font-bold tracking-wide text-slate-900">
-                    {{ hideAmount ? 'NT$ ********' : 'NT$ ' + totalTwd.toLocaleString() }}
-                </div>
-
-                <!-- 各分類小卡清單 (精美網格排版，支援千分位與專屬顏色) -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3 border-t border-[#b8d0fc]">
-                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="bg-white/70 backdrop-blur-sm p-2.5 rounded-xl border border-[#b8d0fc]/50 flex flex-col justify-between">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" :style="{ backgroundColor: categoryColors[cat] }"></span>
-                            <span class="text-xs font-bold text-slate-700 truncate">{{ cat }}</span>
-                        </div>
-                        <div class="text-xs font-semibold text-slate-900 mt-1.5 text-right">
-                            {{ hideAmount ? '****' : 'NT$ ' + amt.toLocaleString() }}
-                        </div>
+                    <div class="text-3xl font-bold tracking-wide text-slate-800 mt-1">
+                        {{ hideAmount ? '💎 鑽石閃耀中 ✨' : 'NT$ ' + totalTwd.toLocaleString() }}
                     </div>
                 </div>
+                <!-- 隱藏金額按鈕 (克拉鑽石風格) -->
+                <button @click="hideAmount = !hideAmount" class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center transition-all shadow-sm">
+                    <i :class="hideAmount ? 'fa-solid fa-gem text-[#f7cac9]' : 'fa-solid fa-eye'"></i>
+                </button>
             </div>
 
             <!-- 新增花費表單 -->
@@ -281,7 +268,7 @@
                 const hideAmount = ref(false); // 總金額隱藏功能
                 let baseTwd = 0;
 
-                // 門票顏色已更新為 #fff4fb
+                // 門票顏色為 #fff4fb
                 const categoryColors = {
                     '門票🎫': '#fff4fb',
                     '追隨✨': '#d2e1fd',
