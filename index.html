@@ -77,8 +77,9 @@
                     <div class="text-xs tracking-wider text-slate-600 font-bold uppercase flex items-center gap-1.5">
                         <i class="fa-solid fa-coins text-blue-500"></i> 總花費金額 (TOTAL)
                     </div>
+                    <!-- 隱藏時直接留空，不顯示任何醜符號 -->
                     <div class="text-2xl sm:text-3xl font-bold tracking-wide text-slate-900 mt-2 truncate">
-                        {{ hideAmount ? '********' : 'NT$ ' + totalTwd.toLocaleString() }}
+                        {{ hideAmount ? '' : 'NT$ ' + totalTwd.toLocaleString() }}
                     </div>
                 </div>
                 <!-- 隱藏金額按鈕 -->
