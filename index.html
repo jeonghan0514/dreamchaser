@@ -15,7 +15,8 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f4f7fc;
+            /* 換成清新舒服的柔和淺綠色背景 */
+            background-color: #f2f7f4;
             color: #2d3748;
         }
         .money-card {
@@ -23,7 +24,6 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         }
-        /* 融合克拉質感的柔和藍色漸層卡片，精緻又不刺眼 */
         .money-total-card {
             background: linear-gradient(135deg, #e8f0fe 0%, #d2e1fd 100%);
             border: 1px solid #b8d0fc;
@@ -70,19 +70,20 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
-            <!-- 總金額卡片 (克拉藍色質感漸層 + 鑽石隱藏特效) -->
+            <!-- 總金額卡片 -->
             <div class="money-total-card rounded-2xl p-6 text-slate-800 flex justify-between items-center">
                 <div>
                     <div class="text-xs tracking-wider text-slate-600 font-bold uppercase flex items-center gap-1.5">
                         <i class="fa-solid fa-coins text-blue-500"></i> 總花費金額 (Total)
                     </div>
                     <div class="text-3xl font-bold tracking-wide text-slate-900 mt-1">
-                        {{ hideAmount ? '💎 鑽石閃耀中 ✨' : 'NT$ ' + totalTwd.toLocaleString() }}
+                        {{ hideAmount ? '💎💎💎' : 'NT$ ' + totalTwd.toLocaleString() }}
                     </div>
                 </div>
-                <!-- 隱藏金額按鈕 (鑽石圖案風格) -->
-                <button @click="hideAmount = !hideAmount" class="w-11 h-11 rounded-xl bg-white/80 border border-[#b8d0fc] text-slate-700 hover:bg-white flex items-center justify-center transition-all shadow-sm">
-                    <i :class="hideAmount ? 'fa-solid fa-gem text-blue-500 animate-pulse' : 'fa-solid fa-eye'"></i>
+                <!-- 隱藏金額按鈕 (切換藍色鑽石) -->
+                <button @click="hideAmount = !hideAmount" class="px-3 py-2 rounded-xl bg-white/80 border border-[#b8d0fc] text-slate-700 hover:bg-white flex items-center gap-1.5 transition-all shadow-sm text-xs font-bold">
+                    <i :class="hideAmount ? 'fa-solid fa-gem text-blue-500' : 'fa-solid fa-eye-slash'"></i>
+                    <span>{{ hideAmount ? '顯示頂部金額' : '隱藏金額' }}</span>
                 </button>
             </div>
 
@@ -268,7 +269,6 @@
                 const hideAmount = ref(false); // 總金額隱藏功能
                 let baseTwd = 0;
 
-                // 門票顏色維持 #fff4fb，並帶有克拉藍色質感
                 const categoryColors = {
                     '門票🎫': '#fff4fb',
                     '追隨✨': '#d2e1fd',
