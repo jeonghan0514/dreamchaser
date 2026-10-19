@@ -38,6 +38,13 @@
         .money-btn:hover {
             background-color: #f2b8b6;
         }
+        .diamond-mask {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #f7cac9;
+            filter: drop-shadow(0 2px 4px rgba(247, 202, 201, 0.4));
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -77,9 +84,11 @@
                     <div class="text-xs tracking-wider text-slate-600 font-bold uppercase flex items-center gap-1.5">
                         <i class="fa-solid fa-coins text-blue-500"></i> 總花費金額 (TOTAL)
                     </div>
-                    <!-- 正常顯示金額，點擊隱藏時顯示隱私遮蔽符號 -->
                     <div class="text-2xl sm:text-3xl font-bold tracking-wide text-slate-900 mt-2 truncate">
-                        {{ hideAmount ? '••••••••' : 'NT$ ' + totalTwd.toLocaleString() }}
+                        <span v-if="hideAmount" class="diamond-mask">
+                            <i class="fa-solid fa-gem"></i><i class="fa-solid fa-gem"></i><i class="fa-solid fa-gem"></i>
+                        </span>
+                        <span v-else>NT$ {{ totalTwd.toLocaleString() }}</span>
                     </div>
                 </div>
                 <!-- 隱藏金額按鈕 -->
