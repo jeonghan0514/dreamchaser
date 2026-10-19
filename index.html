@@ -77,7 +77,6 @@
                     <div class="text-xs tracking-wider text-slate-600 font-bold uppercase flex items-center gap-1.5">
                         <i class="fa-solid fa-coins text-blue-500"></i> 總花費金額 (TOTAL)
                     </div>
-                    <!-- 隱藏時直接留空，不顯示任何醜符號 -->
                     <div class="text-2xl sm:text-3xl font-bold tracking-wide text-slate-900 mt-2 truncate">
                         {{ hideAmount ? '' : 'NT$ ' + totalTwd.toLocaleString() }}
                     </div>
@@ -95,8 +94,8 @@
                     <i class="fa-solid fa-circle-plus text-slate-500"></i> 新增記錄
                 </h2>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
-                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-700 focus:outline-none focus:border-[#b8d0fc]">
+                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-700 focus:outline-none focus:border-[#b8d0fc]">
                         <option value="追隨✨">追隨✨</option>
                         <option value="門票🎫">門票🎫</option>
                         <option value="吃吃🍡">吃吃🍡</option>
@@ -106,17 +105,17 @@
                         <option value="其他🔍">其他🔍</option>
                     </select>
                 </div>
-                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 
                 <!-- 外幣與匯率欄位 -->
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
-                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 </div>
 
                 <!-- 台幣金額與刷卡手續費選項 -->
                 <div class="space-y-2">
-                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="onManualTwdInput" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="onManualTwdInput" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                     <label class="flex items-center gap-2 cursor-pointer pt-1 px-1">
                         <input type="checkbox" v-model="newExpense.isCreditCard" @change="onCardToggle" class="w-4 h-4 accent-[#f7cac9] rounded border-slate-300 focus:ring-0">
                         <span class="text-xs text-slate-600 font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
@@ -268,7 +267,7 @@
 
                 const filterCategory = ref('');
                 const filterMonth = ref('');
-                const hideAmount = ref(false); // 總金額隱藏功能
+                const hideAmount = ref(false);
                 let baseTwd = 0;
 
                 const categoryColors = {
