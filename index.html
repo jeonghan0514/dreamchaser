@@ -15,7 +15,6 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            /* 換成清新舒服的柔和淺綠色背景 */
             background-color: #f2f7f4;
             color: #2d3748;
         }
@@ -23,11 +22,19 @@
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border-radius: 20px;
         }
         .money-total-card {
             background: linear-gradient(135deg, #e8f0fe 0%, #d2e1fd 100%);
             border: 1px solid #b8d0fc;
             box-shadow: 0 6px 20px rgba(210, 225, 253, 0.4);
+            border-radius: 20px;
+        }
+        /* 妳要的鑽石造型外框按鈕與卡片視覺 */
+        .diamond-box {
+            border-radius: 20px;
+            border-top-left-radius: 24px;
+            border-bottom-right-radius: 24px;
         }
         .money-btn {
             background-color: #f7cac9;
@@ -50,51 +57,51 @@
         </header>
 
         <!-- 導覽頁籤 -->
-        <div class="flex money-card rounded-2xl p-1.5 mb-6">
+        <div class="flex money-card p-1.5 mb-6">
             <button @click="currentTab = 'expense'" 
                 :class="currentTab === 'expense' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
+                class="flex-1 py-3 rounded-2xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-wallet"></i> 花費記帳
             </button>
             <button @click="currentTab = 'chart'" 
                 :class="currentTab === 'chart' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
+                class="flex-1 py-3 rounded-2xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-chart-pie"></i> 圓餅圖與明細
             </button>
             <button @click="currentTab = 'checklist'" 
                 :class="currentTab === 'checklist' ? 'money-btn shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="flex-1 py-3 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
+                class="flex-1 py-3 rounded-2xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-suitcase"></i> 行李與航班
             </button>
         </div>
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
-            <!-- 總金額卡片 -->
-            <div class="money-total-card rounded-2xl p-6 text-slate-800 flex justify-between items-center">
+            <!-- 總金額卡片 (鑽石外框造型) -->
+            <div class="money-total-card diamond-box p-6 text-slate-800 flex justify-between items-center">
                 <div>
                     <div class="text-xs tracking-wider text-slate-600 font-bold uppercase flex items-center gap-1.5">
                         <i class="fa-solid fa-coins text-blue-500"></i> 總花費金額 (Total)
                     </div>
                     <div class="text-3xl font-bold tracking-wide text-slate-900 mt-1">
-                        {{ hideAmount ? '💎💎💎' : 'NT$ ' + totalTwd.toLocaleString() }}
+                        {{ hideAmount ? '••••••••' : 'NT$ ' + totalTwd.toLocaleString() }}
                     </div>
                 </div>
-                <!-- 隱藏金額按鈕 (切換藍色鑽石) -->
-                <button @click="hideAmount = !hideAmount" class="px-3 py-2 rounded-xl bg-white/80 border border-[#b8d0fc] text-slate-700 hover:bg-white flex items-center gap-1.5 transition-all shadow-sm text-xs font-bold">
-                    <i :class="hideAmount ? 'fa-solid fa-gem text-blue-500' : 'fa-solid fa-eye-slash'"></i>
+                <!-- 妳要的鑽石外框按鈕 -->
+                <button @click="hideAmount = !hideAmount" class="px-4 py-2.5 bg-white/90 border border-[#b8d0fc] text-slate-700 hover:bg-white flex items-center gap-1.5 transition-all shadow-sm text-xs font-bold diamond-box">
+                    <i :class="hideAmount ? 'fa-solid fa-eye text-blue-500' : 'fa-solid fa-eye-slash'"></i>
                     <span>{{ hideAmount ? '顯示頂部金額' : '隱藏金額' }}</span>
                 </button>
             </div>
 
             <!-- 新增花費表單 -->
-            <div class="money-card rounded-2xl p-5 space-y-3">
+            <div class="money-card p-5 space-y-3">
                 <h2 class="font-bold text-slate-700 text-sm tracking-wider uppercase flex items-center gap-2">
                     <i class="fa-solid fa-circle-plus text-slate-500"></i> 新增記錄
                 </h2>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
-                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="date" v-model="newExpense.date" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
+                    <select v-model="newExpense.category" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 focus:outline-none focus:border-[#b8d0fc]">
                         <option value="追隨✨">追隨✨</option>
                         <option value="門票🎫">門票🎫</option>
                         <option value="吃吃🍡">吃吃🍡</option>
@@ -104,24 +111,24 @@
                         <option value="其他🔍">其他🔍</option>
                     </select>
                 </div>
-                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                <input type="text" placeholder="內容 (例如: 門票 / 機票)" v-model="newExpense.content" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 
                 <!-- 外幣與匯率欄位 -->
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
-                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcFromForeign" class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                 </div>
 
                 <!-- 台幣金額與刷卡手續費選項 -->
                 <div class="space-y-2">
-                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="onManualTwdInput" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
+                    <input type="number" placeholder="台幣金額 (NT$)" v-model.number="newExpense.twdAmt" @input="onManualTwdInput" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm text-slate-750 placeholder-slate-400 focus:outline-none focus:border-[#b8d0fc]">
                     <label class="flex items-center gap-2 cursor-pointer pt-1 px-1">
                         <input type="checkbox" v-model="newExpense.isCreditCard" @change="onCardToggle" class="w-4 h-4 accent-[#f7cac9] rounded border-slate-300 focus:ring-0">
                         <span class="text-xs text-slate-600 font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
                     </label>
                 </div>
 
-                <button @click="addExpense" class="w-full money-btn py-3 rounded-xl text-sm font-bold tracking-wider shadow-sm transition-all">
+                <button @click="addExpense" class="w-full money-btn py-3 rounded-2xl text-sm font-bold tracking-wider shadow-sm transition-all">
                     新增花費
                 </button>
             </div>
@@ -130,7 +137,7 @@
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
             <!-- 圓餅圖區塊 -->
-            <div class="money-card rounded-2xl p-5 text-center space-y-4">
+            <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f7cac9]"></i> 各分類花費佔比
                 </h2>
@@ -139,7 +146,7 @@
                 </div>
                 <!-- 分類金額與專屬顏色標籤 -->
                 <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 text-left text-xs">
-                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2.5 rounded-2xl bg-slate-50 border border-slate-100">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full inline-block border border-slate-200" :style="{ backgroundColor: categoryColors[cat] }"></span>
                             <span class="font-bold text-slate-700">{{ cat }}</span>
@@ -150,19 +157,19 @@
             </div>
 
             <!-- 篩選器與明細列表區塊 -->
-            <div class="money-card rounded-2xl p-4 space-y-3">
+            <div class="money-card p-4 space-y-3">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pb-2 border-b border-slate-100">
                     <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-filter text-[#f7cac9]"></i> 花費明細篩選 (由新到舊)
                     </h2>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <!-- 分類篩選 -->
-                        <select v-model="filterCategory" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-700 focus:outline-none">
+                        <select v-model="filterCategory" class="bg-slate-50 border border-slate-200 rounded-2xl p-2 text-xs text-slate-700 focus:outline-none">
                             <option value="">所有分類</option>
                             <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
                         </select>
                         <!-- 月份篩選 (YYYY-MM) -->
-                        <input type="month" v-model="filterMonth" class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-700 focus:outline-none">
+                        <input type="month" v-model="filterMonth" class="bg-slate-50 border border-slate-200 rounded-2xl p-2 text-xs text-slate-700 focus:outline-none">
                         <button @click="filterCategory = ''; filterMonth = ''" class="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"><i class="fa-solid fa-rotate-right"></i></button>
                     </div>
                 </div>
@@ -172,7 +179,7 @@
                     <div v-if="filteredExpenses.length === 0" class="text-center py-8 text-slate-400 text-xs">
                         沒有符合條件的花費記錄唷 🔍
                     </div>
-                    <div v-for="(item, index) in filteredExpenses" :key="index" class="p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center">
+                    <div v-for="(item, index) in filteredExpenses" :key="index" class="p-3 bg-slate-50 border border-slate-100 rounded-2xl flex justify-between items-center">
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] px-2 py-0.5 rounded-full font-bold text-slate-800 border border-slate-200/60" :style="{ backgroundColor: categoryColors[item.category] || '#edf2f7' }">
@@ -195,24 +202,24 @@
         <!-- 畫面 C：行李清單與航班資訊 -->
         <div v-show="currentTab === 'checklist'" class="space-y-4">
             <!-- 航班資訊編輯卡片 -->
-            <div class="money-card rounded-2xl p-5 space-y-3">
+            <div class="money-card p-5 space-y-3">
                 <h2 class="font-bold text-slate-800 text-sm tracking-wider flex items-center gap-2">
                     <i class="fa-solid fa-plane-departure text-[#f7cac9]"></i> 航班與行程資訊
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs text-slate-500 font-medium">去程資訊</label>
-                        <input type="text" v-model="flightInfo.dep" placeholder="例: 10/29 TPE 20:00 -> ICN 23:30" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#b8d0fc]" @change="saveFlightInfo">
+                        <input type="text" v-model="flightInfo.dep" placeholder="例: 10/29 TPE 20:00 -> ICN 23:30" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#b8d0fc]" @change="saveFlightInfo">
                     </div>
                     <div>
                         <label class="text-xs text-slate-500 font-medium">回程資訊</label>
-                        <input type="text" v-model="flightInfo.ret" placeholder="例: 11/2 ICN 00:30 -> RMQ 02:10" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#b8d0fc]" @change="saveFlightInfo">
+                        <input type="text" v-model="flightInfo.ret" placeholder="例: 11/2 ICN 00:30 -> RMQ 02:10" class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#b8d0fc]" @change="saveFlightInfo">
                     </div>
                 </div>
             </div>
 
             <!-- 行李準備進度 -->
-            <div class="money-card rounded-2xl p-4 flex justify-between items-center">
+            <div class="money-card p-4 flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-slate-800 text-sm tracking-wider">行李準備進度</h2>
                     <p class="text-xs text-slate-400 font-medium mt-0.5">已勾選 {{ checkedCount }} / {{ totalChecklistCount }} 項</p>
@@ -223,12 +230,12 @@
             </div>
 
             <!-- 清單分類 -->
-            <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card rounded-2xl p-4 space-y-2">
+            <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card p-4 space-y-2">
                 <h3 class="font-bold text-slate-700 text-sm tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-gem text-[#f7cac9]"></i> {{ groupName }}
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-0.5">
-                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">
+                    <label v-for="(item, idx) in group" :key="idx" class="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-slate-50 transition-all cursor-pointer">
                         <input type="checkbox" v-model="item.checked" @change="saveChecklist" class="w-4 h-4 accent-[#b2ceed] rounded border-slate-300 focus:ring-0 shrink-0">
                         <span :class="item.checked ? 'line-through text-slate-400 font-normal' : 'text-slate-800 font-bold'" class="text-xs truncate">{{ item.name }}</span>
                     </label>
