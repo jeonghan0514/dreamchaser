@@ -71,19 +71,19 @@
 
         <!-- 畫面 A：花費記帳 -->
         <div v-show="currentTab === 'expense'" class="space-y-4">
-            <!-- 總金額卡片 (修正為完美的粉紅鑽石遮蔽與按鈕排版) -->
+            <!-- 總金額卡片 -->
             <div class="money-total-card p-6 text-slate-800 flex justify-between items-center gap-4">
                 <div class="min-w-0">
                     <div class="text-xs tracking-wider text-slate-600 font-bold uppercase flex items-center gap-1.5">
                         <i class="fa-solid fa-coins text-blue-500"></i> 總花費金額 (TOTAL)
                     </div>
                     <div class="text-2xl sm:text-3xl font-bold tracking-wide text-slate-900 mt-2 truncate">
-                        {{ hideAmount ? '💎 💎 💎' : 'NT$ ' + totalTwd.toLocaleString() }}
+                        {{ hideAmount ? '••••••••' : 'NT$ ' + totalTwd.toLocaleString() }}
                     </div>
                 </div>
-                <!-- 妳要的精美按鈕與鑽石風格 -->
+                <!-- 隱藏金額按鈕 -->
                 <button @click="hideAmount = !hideAmount" class="shrink-0 px-4 py-2.5 rounded-full bg-white/90 border border-[#b8d0fc] text-slate-700 hover:bg-white flex items-center gap-1.5 transition-all shadow-sm text-xs font-bold">
-                    <i :class="hideAmount ? 'fa-solid fa-gem text-pink-400' : 'fa-solid fa-eye-slash text-blue-500'"></i>
+                    <i :class="hideAmount ? 'fa-solid fa-eye text-blue-500' : 'fa-solid fa-eye-slash text-slate-500'"></i>
                     <span>{{ hideAmount ? '顯示頂部金額' : '隱藏金額' }}</span>
                 </button>
             </div>
