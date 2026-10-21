@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>✨ DREAMING | 追夢之旅 💎</title>
-    <!-- 網站專屬小圖示 (直接讀取 GitHub 中的 logo.jpg) -->
+    <!-- 網站專屬小圖示 (Favicon & Apple Touch Icon) -->
     <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 -->
@@ -142,14 +143,14 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 各分類花費佔比 (完美置中環狀圖) -->
+            <!-- 各分類花費佔比 (高解析度清晰環狀圖) -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
-                <!-- 畫布 440x300，中心點完美設在 220 也就是正中間 -->
+                <!-- 畫布容器，支援 Retina 高畫質渲染 -->
                 <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" width="440" height="300" class="max-w-full"></canvas>
+                    <canvas id="expenseChart" width="440" height="300" class="max-w-full w-[440px] h-[300px]"></canvas>
                 </div>
                 <!-- 分類金額與百分比列表 -->
                 <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
@@ -166,21 +167,24 @@
                 </div>
             </div>
 
-            <!-- 篩選器與明細列表區塊 (標題為「花費明細」) -->
+            <!-- 篩選器與明細列表區塊 (優化手機排版) -->
             <div class="money-card p-4 space-y-3">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pb-2 border-b border-[#c8dcd0]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#c8dcd0]">
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細
                     </h2>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                         <!-- 分類篩選 -->
-                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
+                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none flex-1 sm:flex-none">
                             <option value="">所有分類</option>
                             <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
                         </select>
-                        <!-- 月份篩選 (YYYY-MM) -->
-                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
-                        <button @click="filterCategory = ''; filterMonth = ''" class="text-xs text-[#8ca89b] hover:text-[#2c4a3b] px-2 py-1"><i class="fa-solid fa-rotate-right"></i></button>
+                        <!-- 月份篩選 (預設空值即顯示全部) -->
+                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none flex-1 sm:flex-none">
+                        <!-- 重置篩選按鈕 -->
+                        <button @click="filterCategory = ''; filterMonth = ''" class="text-xs bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] px-3 py-2 rounded-2xl font-bold flex items-center gap-1 hover:bg-[#d2e1fd] transition-all">
+                            <i class="fa-solid fa-rotate-right"></i> 全部
+                        </button>
                     </div>
                 </div>
 
@@ -475,20 +479,29 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 繪製完美置中的環狀圖
+                // 繪製高解析度清晰、置中的環狀圖 (適配 Retina 手機螢幕)
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
                         if (!canvas) return;
                         const ctx = canvas.getContext('2d');
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        const dpr = window.devicePixelRatio || 1;
+                        const logicalWidth = 440;
+                        const logicalHeight = 300;
+
+                        // 調整 canvas 實際像素以適配手機高解析度，文字和線條就會變超清晰
+                        canvas.width = logicalWidth * dpr;
+                        canvas.height = logicalHeight * dpr;
+                        ctx.scale(dpr, dpr);
+
+                        ctx.clearRect(0, 0, logicalWidth, logicalHeight);
 
                         const data = categoryTotals.value;
                         const total = totalTwd.value;
 
-                        // 畫布寬 440，中心點完美落在 220 正中央
-                        const centerX = 220;
-                        const centerY = canvas.height / 2;
+                        const centerX = logicalWidth / 2;
+                        const centerY = logicalHeight / 2;
                         const outerRadius = 75;
                         const innerRadius = 40;
 
@@ -523,7 +536,7 @@
                                 ctx.strokeStyle = '#ffffff';
                                 ctx.stroke();
 
-                                // 2. 繪製外圍引線與清晰大字體
+                                // 2. 繪製外圍清晰引線與大字體
                                 const midAngle = startAngle + sliceAngle / 2;
                                 const percent = ((val / total) * 100).toFixed(1);
 
@@ -546,7 +559,7 @@
                                     ctx.strokeStyle = '#729c85';
                                     ctx.stroke();
 
-                                    // 清晰大字體 (12px 粗體)
+                                    // 高畫質清晰字體 (12px 粗體)
                                     ctx.font = 'bold 12px Noto Sans TC';
                                     ctx.fillStyle = '#2c4a3b';
                                     ctx.textAlign = isRight ? 'left' : 'right';
