@@ -48,6 +48,14 @@
             color: #f4d0d2;
             filter: drop-shadow(0 2px 4px rgba(244, 208, 210, 0.4));
         }
+        /* 專門用來約束彈跳視窗內日期輸入框在手機上的大小，避免被日期元件撐破 */
+        .modal-date-input::-webkit-datetime-edit {
+            padding: 0;
+        }
+        .modal-date-input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -107,13 +115,14 @@
                     <i class="fa-solid fa-circle-plus text-[#729c85]"></i> 新增記錄
                 </h2>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="date" v-model="newExpense.date" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] focus:outline-none focus:border-[#457b9d]">
-                    <select v-model="newExpense.category" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] focus:outline-none focus:border-[#457b9d]">
+                    <input type="date" v-model="newExpense.date" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] focus:outline-none focus:border-[#457b9d]">
+                    <select v-model="newExpense.category" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] focus:outline-none focus:border-[#457b9d]">
                         <option value="追隨✨">追隨✨</option>
                         <option value="門票🎫">門票🎫</option>
                         <option value="吃吃🍡">吃吃🍡</option>
                         <option value="住宿🏨">住宿🏨</option>
                         <option value="交通🚗">交通🚗</option>
+                        <option value="飯拍📸">飯拍📸</option>
                         <option value="剁手🎀">剁手🎀</option>
                         <option value="其他🔍">其他🔍</option>
                     </select>
@@ -122,8 +131,8 @@
                 
                 <!-- 外幣與匯率欄位 -->
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcFromForeign" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] placeholder-[#8ca89b] focus:outline-none focus:border-[#457b9d]">
-                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcFromForeign" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] placeholder-[#8ca89b] focus:outline-none focus:border-[#457b9d]">
+                    <input type="number" placeholder="外幣金額 (選填)" v-model.number="newExpense.foreignAmt" @input="calcFromForeign" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] placeholder-[#8ca89b] focus:outline-none focus:border-[#457b9d]">
+                    <input type="number" step="0.001" placeholder="匯率 (例: 0.024)" v-model.number="newExpense.exchangeRate" @input="calcFromForeign" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] placeholder-[#8ca89b] focus:outline-none focus:border-[#457b9d]">
                 </div>
 
                 <!-- 金額與刷卡手續費選項 -->
@@ -262,7 +271,7 @@
             </div>
         </div>
 
-        <!-- 彈跳視窗：修改明細 (完美限制日期寬度不跑版) -->
+        <!-- 彈跳視窗：修改明細 -->
         <div v-if="showEditModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="money-card bg-white w-full max-w-sm p-5 space-y-3 shadow-2xl animate-fade-in">
                 <div class="flex justify-between items-center border-b border-[#c8dcd0] pb-2.5">
@@ -276,18 +285,19 @@
 
                 <div class="space-y-2.5 text-xs">
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="min-w-0">
+                        <div class="overflow-hidden">
                             <label class="text-[11px] text-[#52796f] font-bold mb-1 block">日期</label>
-                            <input type="date" v-model="editingItem.date" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-[11px] text-[#2c4a3b] focus:outline-none">
+                            <input type="date" v-model="editingItem.date" class="modal-date-input w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-xl px-2 py-2 text-[11px] text-[#2c4a3b] focus:outline-none">
                         </div>
-                        <div class="min-w-0">
+                        <div class="overflow-hidden">
                             <label class="text-[11px] text-[#52796f] font-bold mb-1 block">分類</label>
-                            <select v-model="editingItem.category" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-[11px] text-[#2c4a3b] focus:outline-none">
+                            <select v-model="editingItem.category" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-xl px-2 py-2 text-[11px] text-[#2c4a3b] focus:outline-none">
                                 <option value="追隨✨">追隨✨</option>
                                 <option value="門票🎫">門票🎫</option>
                                 <option value="吃吃🍡">吃吃🍡</option>
                                 <option value="住宿🏨">住宿🏨</option>
                                 <option value="交通🚗">交通🚗</option>
+                                <option value="飯拍📸">飯拍📸</option>
                                 <option value="剁手🎀">剁手🎀</option>
                                 <option value="其他🔍">其他🔍</option>
                             </select>
@@ -296,23 +306,23 @@
 
                     <div>
                         <label class="text-[11px] text-[#52796f] font-bold mb-1 block">內容</label>
-                        <input type="text" v-model="editingItem.content" placeholder="內容" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
+                        <input type="text" v-model="editingItem.content" placeholder="內容" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="min-w-0">
+                        <div>
                             <label class="text-[11px] text-[#52796f] font-bold mb-1 block">外幣金額 (選填)</label>
-                            <input type="number" v-model.number="editingItem.foreignAmt" @input="calcEditModalForeign" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
+                            <input type="number" v-model.number="editingItem.foreignAmt" @input="calcEditModalForeign" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
                         </div>
-                        <div class="min-w-0">
+                        <div>
                             <label class="text-[11px] text-[#52796f] font-bold mb-1 block">匯率</label>
-                            <input type="number" step="0.001" v-model.number="editingItem.exchangeRate" @input="calcEditModalForeign" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
+                            <input type="number" step="0.001" v-model.number="editingItem.exchangeRate" @input="calcEditModalForeign" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
                         </div>
                     </div>
 
                     <div>
                         <label class="text-[11px] text-[#52796f] font-bold mb-1 block">金額 ($)</label>
-                        <input type="number" v-model.number="editingItem.twdAmt" @input="onManualEditTwdInput" class="w-full min-w-0 bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
+                        <input type="number" v-model.number="editingItem.twdAmt" @input="onManualEditTwdInput" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-2 text-xs text-[#2c4a3b] focus:outline-none">
                         <label class="flex items-center gap-2 cursor-pointer pt-2 px-0.5">
                             <input type="checkbox" v-model="editingItem.isCreditCard" @change="onEditCardToggle" class="w-4 h-4 accent-[#f4d0d2] rounded border-[#c8dcd0]">
                             <span class="text-[11px] text-[#52796f] font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
@@ -377,6 +387,7 @@
                     '交通🚗': '#F4E287',
                     '吃吃🍡': '#F4A261',
                     '住宿🏨': '#B7E4C7',
+                    '飯拍📸': '#FFD1DC',
                     '剁手🎀': '#D8B4E2',
                     '其他🔍': '#D8D8D8'
                 };
