@@ -143,24 +143,36 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 各分類花費佔比 (無引線、正圓內嵌 % 數) -->
-            <div class="money-card p-5 text-center space-y-4">
-                <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
-                </h2>
-                <!-- 畫布容器 (絕對正圓) -->
-                <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" class="w-[320px] h-[320px] max-w-full"></canvas>
+            <!-- 圓餅圖與右側分類金額方框總卡片 -->
+            <div class="money-card p-5 space-y-4">
+                <div class="flex justify-between items-center px-1">
+                    <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
+                    </h2>
+                    <span class="text-[11px] text-[#729c85] font-medium">💡 點擊方框可看詳細比例</span>
                 </div>
-                <!-- 分類金額圖例 -->
-                <div class="space-y-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
-                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-3 rounded-2xl bg-[#f7faf8] border border-[#c8dcd0]">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <span class="w-3.5 h-3.5 rounded-full shrink-0 inline-block border border-[#a2c4b8]" :style="{ backgroundColor: categoryColors[cat] }"></span>
-                            <span class="font-bold text-[#2c4a3b] text-sm">{{ cat }}</span>
-                        </div>
-                        <div class="text-right shrink-0 whitespace-nowrap">
-                            <span class="font-bold text-[#1d3557] text-sm">$ {{ amt.toLocaleString() }}</span>
+
+                <!-- 桌面並排、手機上下排的容器 -->
+                <div class="flex flex-col md:flex-row items-center gap-5">
+                    <!-- 左側：完美正圓環狀圖 -->
+                    <div class="relative shrink-0 flex justify-center items-center">
+                        <canvas id="expenseChart" class="w-[240px] h-[240px] cursor-pointer"></canvas>
+                    </div>
+
+                    <!-- 右側：分類金額方框清單 -->
+                    <div class="w-full space-y-2 text-xs">
+                        <div v-for="(amt, cat) in categoryTotals" :key="cat" 
+                             @click="activeSlice = { cat, amt, percent: getCategoryPercentage(amt) }"
+                             :class="activeSlice && activeSlice.cat === cat ? 'border-[#457b9d] bg-[#e8f0fe]/70 shadow-sm' : 'border-[#c8dcd0] bg-[#f7faf8]'"
+                             class="flex justify-between items-center p-2.5 rounded-xl border transition-all cursor-pointer hover:border-[#457b9d]">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="w-3.5 h-3.5 rounded-full shrink-0 inline-block border border-[#a2c4b8]" :style="{ backgroundColor: categoryColors[cat] }"></span>
+                                <span class="font-bold text-[#2c4a3b] text-xs">{{ cat }}</span>
+                            </div>
+                            <div class="text-right shrink-0 whitespace-nowrap">
+                                <span class="font-bold text-[#1d3557] text-xs">$ {{ amt.toLocaleString() }}</span>
+                                <span class="text-[10px] text-[#52796f] ml-1.5 font-bold">({{ getCategoryPercentage(amt) }}%)</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -281,6 +293,7 @@
                 const filterCategory = ref('');
                 const filterMonth = ref('');
                 const hideAmount = ref(false);
+                const activeSlice = ref(null);
                 let baseTwd = 0;
 
                 const categoryColors = {
@@ -472,7 +485,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 繪製完美正圓環狀圖 (無引線，內嵌 % 數)
+                // 繪製完美正圓環狀圖
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -480,7 +493,7 @@
                         const ctx = canvas.getContext('2d');
 
                         const dpr = window.devicePixelRatio || 1;
-                        const size = 320; // 絕對正方形
+                        const size = 240;
 
                         canvas.width = size * dpr;
                         canvas.height = size * dpr;
@@ -493,8 +506,8 @@
 
                         const centerX = size / 2;
                         const centerY = size / 2;
-                        const outerRadius = 110;
-                        const innerRadius = 55;
+                        const outerRadius = 85;
+                        const innerRadius = 42;
 
                         if (total === 0) {
                             ctx.beginPath();
@@ -503,20 +516,22 @@
                             ctx.fillStyle = '#e2e8f0';
                             ctx.fill();
                             ctx.fillStyle = '#52796f';
-                            ctx.font = '13px Noto Sans TC';
+                            ctx.font = '12px Noto Sans TC';
                             ctx.textAlign = 'center';
                             ctx.fillText('尚無花費資料', centerX, centerY + 4);
                             return;
                         }
 
                         let startAngle = 0;
+                        let slices = [];
+
                         for (let cat in data) {
                             const val = data[cat];
                             if (val > 0) {
                                 const sliceAngle = (val / total) * 2 * Math.PI;
                                 const endAngle = startAngle + sliceAngle;
+                                slices.push({ cat, val, startAngle, endAngle });
 
-                                // 1. 繪製扇形
                                 ctx.beginPath();
                                 ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
                                 ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
@@ -527,24 +542,58 @@
                                 ctx.strokeStyle = '#ffffff';
                                 ctx.stroke();
 
-                                // 2. 內嵌 % 數文字 (僅在佔比大於 5% 時顯示，避免擁擠)
-                                const percent = ((val / total) * 100).toFixed(1);
-                                if (Number(percent) >= 5) {
-                                    const midAngle = startAngle + sliceAngle / 2;
-                                    const textRadius = (outerRadius + innerRadius) / 2;
-                                    const textX = centerX + textRadius * Math.cos(midAngle);
-                                    const textY = centerY + textRadius * Math.sin(midAngle);
-
-                                    ctx.font = 'bold 11px Noto Sans TC';
-                                    ctx.fillStyle = '#2c4a3b';
-                                    ctx.textAlign = 'center';
-                                    ctx.textBaseline = 'middle';
-                                    ctx.fillText(`${percent}%`, textX, textY);
-                                }
-
                                 startAngle = endAngle;
                             }
                         }
+
+                        // 繪製中央文字
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        if (activeSlice.value) {
+                            ctx.font = 'bold 12px Noto Sans TC';
+                            ctx.fillStyle = '#2c4a3b';
+                            ctx.fillText(activeSlice.value.cat, centerX, centerY - 8);
+
+                            ctx.font = 'bold 14px Noto Sans TC';
+                            ctx.fillStyle = '#1d3557';
+                            ctx.fillText(`${activeSlice.value.percent}%`, centerX, centerY + 10);
+                        } else {
+                            ctx.font = 'bold 11px Noto Sans TC';
+                            ctx.fillStyle = '#729c85';
+                            ctx.fillText('總花費', centerX, centerY - 8);
+
+                            ctx.font = 'bold 12px Noto Sans TC';
+                            ctx.fillStyle = '#1d3557';
+                            ctx.fillText(`$ ${total.toLocaleString()}`, centerX, centerY + 10);
+                        }
+
+                        canvas.onclick = (e) => {
+                            const rect = canvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            const dx = x - (size / 2);
+                            const dy = y - (size / 2);
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if (dist >= innerRadius && dist <= outerRadius) {
+                                let angle = Math.atan2(dy, dx);
+                                if (angle < 0) angle += 2 * Math.PI;
+
+                                for (let s of slices) {
+                                    if (angle >= s.startAngle && angle <= s.endAngle) {
+                                        activeSlice.value = {
+                                            cat: s.cat,
+                                            amt: s.val,
+                                            percent: getCategoryPercentage(s.val)
+                                        };
+                                        break;
+                                    }
+                                }
+                            } else {
+                                activeSlice.value = null;
+                            }
+                        };
                     });
                 };
 
@@ -615,6 +664,7 @@
                     filterCategory,
                     filterMonth,
                     hideAmount,
+                    activeSlice,
                     filteredExpenses,
                     calcFromForeign,
                     onManualTwdInput,
