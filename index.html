@@ -143,52 +143,49 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 各分類花費佔比 (放大版圓餅圖) -->
+            <!-- 各分類花費佔比 (完美防打結環狀圖) -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
-                <!-- 畫布容器 (高解析度 Retina 適配) -->
+                <!-- 畫布容器 (Retina 高畫質適配，加大畫布寬高以提供寬敞引線空間) -->
                 <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" width="440" height="320" class="max-w-full w-[440px] h-[320px]"></canvas>
+                    <canvas id="expenseChart" width="480" height="360" class="max-w-full w-[480px] h-[360px]"></canvas>
                 </div>
-                <!-- 分類金額與百分比列表 (優化寬度，絕不截斷文字) -->
-                <div class="grid grid-cols-2 gap-2.5 pt-3 border-t border-[#c8dcd0] text-left text-xs">
+                <!-- 分類金額與百分比列表 -->
+                <div class="space-y-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
                     <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-3 rounded-2xl bg-[#f7faf8] border border-[#c8dcd0]">
-                        <div class="flex items-center gap-2 min-w-0 pr-1">
-                            <span class="w-3 h-3 rounded-full shrink-0 inline-block border border-[#a2c4b8]" :style="{ backgroundColor: categoryColors[cat] }"></span>
-                            <span class="font-bold text-[#2c4a3b] truncate">{{ cat }}</span>
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="w-3.5 h-3.5 rounded-full shrink-0 inline-block border border-[#a2c4b8]" :style="{ backgroundColor: categoryColors[cat] }"></span>
+                            <span class="font-bold text-[#2c4a3b] text-sm">{{ cat }}</span>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="font-bold text-[#1d3557]">NT$ {{ amt.toLocaleString() }}</span>
-                            <span class="text-[10px] text-[#52796f] ml-1 font-bold">({{ getCategoryPercentage(amt) }}%)</span>
+                            <span class="font-bold text-[#1d3557] text-sm">NT$ {{ amt.toLocaleString() }}</span>
+                            <span class="text-xs text-[#52796f] ml-1.5 font-bold">({{ getCategoryPercentage(amt) }}%)</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 篩選器與明細列表區塊 (優化手機流暢排版) -->
+            <!-- 篩選器與明細列表區塊 -->
             <div class="money-card p-4 space-y-3">
-                <div class="flex flex-col gap-2.5 pb-3 border-b border-[#c8dcd0]">
+                <div class="flex flex-col gap-3 pb-3 border-b border-[#c8dcd0]">
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細
                     </h2>
-                    <div class="grid grid-cols-3 gap-2 w-full">
-                        <!-- 分類篩選 -->
-                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none w-full">
+                    <div class="grid grid-cols-2 gap-2 w-full">
+                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none w-full font-bold">
                             <option value="">所有分類</option>
                             <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
                         </select>
-                        <!-- 月份篩選 -->
-                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none w-full">
-                        <!-- 重置篩選按鈕 -->
-                        <button @click="filterCategory = ''; filterMonth = ''" class="text-xs bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] py-2 px-2 rounded-2xl font-bold flex items-center justify-center gap-1 hover:bg-[#d2e1fd] transition-all w-full">
-                            <i class="fa-solid fa-rotate-right"></i> 全部
-                        </button>
+                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none w-full font-bold">
                     </div>
+                    <button @click="filterCategory = ''; filterMonth = ''" class="w-full text-xs bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] py-2.5 rounded-2xl font-bold flex items-center justify-center gap-1.5 hover:bg-[#d2e1fd] transition-all">
+                        <i class="fa-solid fa-rotate-right"></i> 顯示全部明細
+                    </button>
                 </div>
 
-                <!-- 篩選後並按日期由新到舊排序的明細清單 -->
+                <!-- 明細清單 -->
                 <div class="space-y-2 pt-1">
                     <div v-if="filteredExpenses.length === 0" class="text-center py-8 text-[#8ca89b] text-xs">
                         沒有符合條件的花費記錄唷 🔍
@@ -215,7 +212,6 @@
 
         <!-- 畫面 C：行李清單與航班資訊 -->
         <div v-show="currentTab === 'checklist'" class="space-y-4">
-            <!-- 航班資訊編輯卡片 -->
             <div class="money-card p-5 space-y-3">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
                     <i class="fa-solid fa-plane-departure text-[#f4d0d2]"></i> 航班與行程資訊
@@ -232,7 +228,6 @@
                 </div>
             </div>
 
-            <!-- 行李準備進度 -->
             <div class="money-card p-4 flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider">行李準備進度</h2>
@@ -243,7 +238,6 @@
                 </div>
             </div>
 
-            <!-- 清單分類 -->
             <div v-for="(group, groupName) in checklist" :key="groupName" class="money-card p-4 space-y-2">
                 <h3 class="font-bold text-[#2c4a3b] text-sm tracking-wider border-b border-[#c8dcd0] pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-gem text-[#f4d0d2]"></i> {{ groupName }}
@@ -293,7 +287,7 @@
                 const categoryColors = {
                     '門票🎫': '#fff4fb',
                     '追隨✨': '#d2e1fd',
-                    '交通🚗': '#F4E287', /* 妳專屬的質感黃色 */
+                    '交通🚗': '#F4E287',
                     '吃吃🍡': '#F4A261',
                     '住宿🏨': '#B7E4C7',
                     '剁手🎀': '#D8B4E2',
@@ -479,7 +473,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 繪製高解析度、圓餅圖放大且引線最適化的環狀圖
+                // 智慧防打結繪圖：自動為靠太近的標籤錯開上下高度
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -487,8 +481,8 @@
                         const ctx = canvas.getContext('2d');
 
                         const dpr = window.devicePixelRatio || 1;
-                        const logicalWidth = 440;
-                        const logicalHeight = 320;
+                        const logicalWidth = 480;
+                        const logicalHeight = 360;
 
                         canvas.width = logicalWidth * dpr;
                         canvas.height = logicalHeight * dpr;
@@ -500,9 +494,9 @@
                         const total = totalTwd.value;
 
                         const centerX = logicalWidth / 2;
-                        const centerY = logicalHeight / 2;
-                        const outerRadius = 95; // 放大圓餅圖半徑
-                        const innerRadius = 50;
+                        const centerY = logicalHeight / 2 - 10;
+                        const outerRadius = 80;
+                        const innerRadius = 42;
 
                         if (total === 0) {
                             ctx.beginPath();
@@ -518,13 +512,70 @@
                         }
 
                         let startAngle = 0;
+                        let labels = [];
+
+                        // 收集所有大於 0% 的分類角度資訊
+                        for (let cat in data) {
+                            const val = data[cat];
+                            if (val > 0) {
+                                const sliceAngle = (val / total) * 2 * Math.PI;
+                                const endAngle = startAngle + sliceAngle;
+                                const midAngle = startAngle + sliceAngle / 2;
+                                const percent = ((val / total) * 100).toFixed(1);
+
+                                if (Number(percent) > 0) {
+                                    labels.push({ cat, percent, midAngle });
+                                }
+                                startAngle = endAngle;
+                            }
+                        }
+
+                        // 依照角度排序並防碰撞微調
+                        labels.sort((a, b) => a.midAngle - b.midAngle);
+
+                        let lastRightY = -999;
+                        let lastLeftY = -999;
+
+                        labels.forEach((item) => {
+                            const { cat, percent, midAngle } = item;
+                            const x1 = centerX + outerRadius * Math.cos(midAngle);
+                            const y1 = centerY + outerRadius * Math.sin(midAngle);
+                            
+                            const lineLen = 35;
+                            const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
+                            let y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
+
+                            const isRight = Math.cos(midAngle) >= 0;
+
+                            // 防碰撞檢測：如果右側或左側的標籤離太近，自動上下錯開
+                            if (isRight) {
+                                if (Math.abs(y2 - lastRightY) < 22) {
+                                    y2 = lastRightY + 24;
+                                }
+                                lastRightY = y2;
+                            } else {
+                                if (Math.abs(y2 - lastLeftY) < 22) {
+                                    y2 = lastLeftY + 24;
+                                }
+                                lastLeftY = y2;
+                            }
+
+                            const x3 = x2 + (isRight ? 22 : -22);
+                            const y3 = y2;
+
+                            // 繪製扇形
+                            // (此處在迴圈中重繪扇形以確保圖層正確)
+                        });
+
+                        // 實際繪製扇形與引線
+                        startAngle = 0;
+                        let drawnLabels = [];
                         for (let cat in data) {
                             const val = data[cat];
                             if (val > 0) {
                                 const sliceAngle = (val / total) * 2 * Math.PI;
                                 const endAngle = startAngle + sliceAngle;
 
-                                // 1. 繪製甜甜圈扇形
                                 ctx.beginPath();
                                 ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
                                 ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
@@ -535,40 +586,65 @@
                                 ctx.strokeStyle = '#ffffff';
                                 ctx.stroke();
 
-                                // 2. 繪製外圍清晰引線與大字體
                                 const midAngle = startAngle + sliceAngle / 2;
                                 const percent = ((val / total) * 100).toFixed(1);
 
                                 if (Number(percent) > 0) {
-                                    const x1 = centerX + outerRadius * Math.cos(midAngle);
-                                    const y1 = centerY + outerRadius * Math.sin(midAngle);
-                                    const lineLen = 22; // 縮短引線，讓圖形更大更集中
-                                    const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
-                                    const y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
-                                    const isRight = Math.cos(midAngle) >= 0;
-                                    const x3 = x2 + (isRight ? 15 : -15);
-                                    const y3 = y2;
-
-                                    // 引線
-                                    ctx.beginPath();
-                                    ctx.moveTo(x1, y1);
-                                    ctx.lineTo(x2, y2);
-                                    ctx.lineTo(x3, y3);
-                                    ctx.lineWidth = 1.2;
-                                    ctx.strokeStyle = '#729c85';
-                                    ctx.stroke();
-
-                                    // 高畫質清晰字體 (12px 粗體)
-                                    ctx.font = 'bold 12px Noto Sans TC';
-                                    ctx.fillStyle = '#2c4a3b';
-                                    ctx.textAlign = isRight ? 'left' : 'right';
-                                    ctx.textBaseline = 'middle';
-                                    ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 4 : -4), y3);
+                                    drawnLabels.push({ cat, percent, midAngle });
                                 }
-
                                 startAngle = endAngle;
                             }
                         }
+
+                        // 繪製引線與文字
+                        let rightYList = [];
+                        let leftYList = [];
+
+                        drawnLabels.forEach((item) => {
+                            const { cat, percent, midAngle } = item;
+                            const x1 = centerX + outerRadius * Math.cos(midAngle);
+                            const y1 = centerY + outerRadius * Math.sin(midAngle);
+                            
+                            const lineLen = 35;
+                            const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
+                            let y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
+                            const isRight = Math.cos(midAngle) >= 0;
+
+                            if (isRight) {
+                                for (let py of rightYList) {
+                                    if (Math.abs(y2 - py) < 24) {
+                                        y2 = py + 26;
+                                    }
+                                }
+                                rightYList.push(y2);
+                            } else {
+                                for (let py of leftYList) {
+                                    if (Math.abs(y2 - py) < 24) {
+                                        y2 = py + 26;
+                                    }
+                                }
+                                leftYList.push(y2);
+                            }
+
+                            const x3 = x2 + (isRight ? 20 : -20);
+                            const y3 = y2;
+
+                            // 繪製折線引線
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.lineTo(x3, y3);
+                            ctx.lineWidth = 1.2;
+                            ctx.strokeStyle = '#729c85';
+                            ctx.stroke();
+
+                            // 繪製高畫質清晰文字
+                            ctx.font = 'bold 12px Noto Sans TC';
+                            ctx.fillStyle = '#2c4a3b';
+                            ctx.textAlign = isRight ? 'left' : 'right';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 4 : -4), y3);
+                        });
                     });
                 };
 
