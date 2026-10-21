@@ -101,16 +101,11 @@
                 </button>
             </div>
 
-            <!-- 新增 / 編輯花費表單 -->
+            <!-- 新增花費表單 -->
             <div class="money-card p-5 space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider uppercase flex items-center gap-2">
-                        <i class="fa-solid fa-circle-plus text-[#729c85]"></i> {{ editingIndex !== null ? '編輯記錄' : '新增記錄' }}
-                    </h2>
-                    <button v-if="editingIndex !== null" @click="cancelEdit" class="text-xs text-[#8ca89b] hover:text-[#2c4a3b] font-bold">
-                        取消編輯
-                    </button>
-                </div>
+                <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-[#729c85]"></i> 新增記錄
+                </h2>
                 <div class="grid grid-cols-2 gap-3">
                     <input type="date" v-model="newExpense.date" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] focus:outline-none focus:border-[#457b9d]">
                     <select v-model="newExpense.category" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-3 text-sm text-[#2c4a3b] focus:outline-none focus:border-[#457b9d]">
@@ -141,20 +136,19 @@
                 </div>
 
                 <button @click="addExpense" class="w-full money-btn py-3 rounded-2xl text-sm tracking-wider shadow-sm transition-all">
-                    {{ editingIndex !== null ? '儲存修改' : '新增花費' }}
+                    新增花費
                 </button>
             </div>
         </div>
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 圓餅圖與右側分類金額方框總卡片 (自動按比例由大到小排序) -->
+            <!-- 圓餅圖與右側分類金額方框總卡片 -->
             <div class="money-card p-5 space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2 px-1">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
 
-                <!-- 桌面並排、手機上下排的容器 -->
                 <div class="flex flex-col md:flex-row items-center gap-5">
                     <!-- 左側：完美正圓環狀圖 -->
                     <div class="relative shrink-0 flex justify-center items-center">
@@ -198,7 +192,7 @@
                     </div>
                 </div>
 
-                <!-- 明細清單 (附帶修改與刪除功能) -->
+                <!-- 明細清單 -->
                 <div class="space-y-2 pt-1">
                     <div v-if="filteredExpenses.length === 0" class="text-center py-8 text-[#8ca89b] text-xs">
                         沒有符合條件的花費記錄唷 🔍
@@ -217,7 +211,7 @@
                             <div class="font-bold text-[#1d3557] text-xs">$ {{ item.twdAmt?.toLocaleString() }}</div>
                             <div v-if="item.foreignAmt" class="text-[10px] text-[#8ca89b]">外幣: {{ item.foreignAmt.toLocaleString() }} (匯率: {{ item.exchangeRate }})</div>
                             <div class="flex items-center justify-end gap-2.5 mt-1">
-                                <button @click="editExpense(item)" class="text-[#52796f] hover:text-[#2c4a3b] text-xs transition-colors" title="修改"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button @click="openEditModal(item)" class="text-[#52796f] hover:text-[#2c4a3b] text-xs transition-colors" title="修改"><i class="fa-solid fa-pen-to-square"></i></button>
                                 <button @click="deleteExpense(index)" class="text-[#a2c4b8] hover:text-red-500 text-xs transition-colors" title="刪除"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
@@ -266,6 +260,75 @@
                 </div>
             </div>
         </div>
+
+        <!-- 彈跳視窗：修改明細 -->
+        <div v-if="showEditModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="money-card bg-white w-full max-w-md p-6 space-y-4 shadow-2xl animate-fade-in">
+                <div class="flex justify-between items-center border-b border-[#c8dcd0] pb-3">
+                    <h3 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-[#729c85]"></i> 修改記錄
+                    </h3>
+                    <button @click="closeEditModal" class="text-[#8ca89b] hover:text-[#2c4a3b] text-sm font-bold">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[11px] text-[#52796f] font-bold mb-1 block">日期</label>
+                            <input type="date" v-model="editingItem.date" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-[#52796f] font-bold mb-1 block">分類</label>
+                            <select v-model="editingItem.category" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none">
+                                <option value="追隨✨">追隨✨</option>
+                                <option value="門票🎫">門票🎫</option>
+                                <option value="吃吃🍡">吃吃🍡</option>
+                                <option value="住宿🏨">住宿🏨</option>
+                                <option value="交通🚗">交通🚗</option>
+                                <option value="剁手🎀">剁手🎀</option>
+                                <option value="其他🔍">其他🔍</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] text-[#52796f] font-bold mb-1 block">內容</label>
+                        <input type="text" v-model="editingItem.content" placeholder="內容" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[11px] text-[#52796f] font-bold mb-1 block">外幣金額 (選填)</label>
+                            <input type="number" v-model.number="editingItem.foreignAmt" @input="calcEditModalForeign" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-[#52796f] font-bold mb-1 block">匯率</label>
+                            <input type="number" step="0.001" v-model.number="editingItem.exchangeRate" @input="calcEditModalForeign" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] text-[#52796f] font-bold mb-1 block">金額 ($)</label>
+                        <input type="number" v-model.number="editingItem.twdAmt" @input="onManualEditTwdInput" class="w-full bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none">
+                        <label class="flex items-center gap-2 cursor-pointer pt-2 px-1">
+                            <input type="checkbox" v-model="editingItem.isCreditCard" @change="onEditCardToggle" class="w-4 h-4 accent-[#f4d0d2] rounded border-[#c8dcd0]">
+                            <span class="text-xs text-[#52796f] font-bold">刷卡 (自動加收 1.5% 海外手續費)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex gap-2.5 pt-2">
+                    <button @click="closeEditModal" class="flex-1 bg-[#f2f7f4] border border-[#c8dcd0] text-[#52796f] py-2.5 rounded-2xl text-xs font-bold transition-all hover:bg-[#e8f0fe]">
+                        取消
+                    </button>
+                    <button @click="saveEditModal" class="flex-1 money-btn py-2.5 rounded-2xl text-xs shadow-sm transition-all">
+                        儲存修改
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Vue 與 Firebase 邏輯 -->
@@ -299,7 +362,12 @@
                 const filterMonth = ref('');
                 const hideAmount = ref(false);
                 const activeSlice = ref(null);
-                const editingIndex = ref(null); // 追蹤目前編輯中的項目真實索引
+                
+                // 彈跳視窗相關狀態
+                const showEditModal = ref(false);
+                const editingIndex = ref(null);
+                const editingItem = ref({});
+                let editBaseTwd = 0;
                 let baseTwd = 0;
 
                 const categoryColors = {
@@ -351,6 +419,40 @@
                             newExpense.value.twdAmt = Math.round(baseTwd * 1.015);
                         } else {
                             newExpense.value.twdAmt = Math.round(baseTwd);
+                        }
+                    }
+                };
+
+                // 彈跳視窗內的匯率計算
+                const calcEditModalForeign = () => {
+                    if (editingItem.value.foreignAmt && editingItem.value.exchangeRate) {
+                        editBaseTwd = editingItem.value.foreignAmt * editingItem.value.exchangeRate;
+                        applyEditFee();
+                    }
+                };
+
+                const onManualEditTwdInput = () => {
+                    if (editingItem.value.twdAmt) {
+                        editBaseTwd = editingItem.value.isCreditCard ? Number(editingItem.value.twdAmt) / 1.015 : Number(editingItem.value.twdAmt);
+                    } else {
+                        editBaseTwd = 0;
+                    }
+                };
+
+                const onEditCardToggle = () => {
+                    if (!editingItem.value.twdAmt && !editingItem.value.foreignAmt) return;
+                    if (editBaseTwd === 0 && editingItem.value.twdAmt) {
+                        editBaseTwd = editingItem.value.isCreditCard ? Number(editingItem.value.twdAmt) / 1.015 : Number(editingItem.value.twdAmt);
+                    }
+                    applyEditFee();
+                };
+
+                const applyEditFee = () => {
+                    if (editBaseTwd > 0) {
+                        if (editingItem.value.isCreditCard) {
+                            editingItem.value.twdAmt = Math.round(editBaseTwd * 1.015);
+                        } else {
+                            editingItem.value.twdAmt = Math.round(editBaseTwd);
                         }
                     }
                 };
@@ -623,18 +725,9 @@
                         return;
                     }
 
-                    if (editingIndex.value !== null) {
-                        // 更新現有記錄
-                        expenses.value[editingIndex.value] = { ...newExpense.value };
-                        editingIndex.value = null;
-                    } else {
-                        // 新增記錄
-                        expenses.value.unshift({ ...newExpense.value });
-                    }
-
+                    expenses.value.unshift({ ...newExpense.value });
                     set(dbRef(database, 'expenses'), expenses.value);
 
-                    // 重置表單
                     newExpense.value = {
                         date: new Date().toISOString().split('T')[0],
                         category: '追隨✨',
@@ -645,28 +738,35 @@
                         isCreditCard: false
                     };
                     baseTwd = 0;
-                    currentTab.value = 'chart'; // 儲存後自動切換回圓餅圖與明細頁檢視
+                    currentTab.value = 'chart';
                 };
 
-                const editExpense = (item) => {
+                // 開啟彈跳視窗進行修改
+                const openEditModal = (item) => {
                     editingIndex.value = item.originalIndex;
-                    newExpense.value = { ...expenses.value[item.originalIndex] };
-                    baseTwd = newExpense.value.isCreditCard ? Number(newExpense.value.twdAmt) / 1.015 : Number(newExpense.value.twdAmt);
-                    currentTab.value = 'expense'; // 切換至記帳頁面進行編輯
+                    editingItem.value = { ...expenses.value[item.originalIndex] };
+                    editBaseTwd = editingItem.value.isCreditCard ? Number(editingItem.value.twdAmt) / 1.015 : Number(editingItem.value.twdAmt);
+                    showEditModal.value = true;
                 };
 
-                const cancelEdit = () => {
+                // 儲存彈跳視窗修改
+                const saveEditModal = () => {
+                    if (!editingItem.value.content || !editingItem.value.twdAmt) {
+                        alert('請填寫內容與金額唷！');
+                        return;
+                    }
+                    if (editingIndex.value !== null) {
+                        expenses.value[editingIndex.value] = { ...editingItem.value };
+                        set(dbRef(database, 'expenses'), expenses.value);
+                    }
+                    closeEditModal();
+                };
+
+                const closeEditModal = () => {
+                    showEditModal.value = false;
                     editingIndex.value = null;
-                    newExpense.value = {
-                        date: new Date().toISOString().split('T')[0],
-                        category: '追隨✨',
-                        content: '',
-                        foreignAmt: null,
-                        exchangeRate: null,
-                        twdAmt: null,
-                        isCreditCard: false
-                    };
-                    baseTwd = 0;
+                    editingItem.value = {};
+                    editBaseTwd = 0;
                 };
 
                 const deleteExpense = (filteredIdx) => {
@@ -675,9 +775,6 @@
                     if (realIndex !== -1) {
                         expenses.value.splice(realIndex, 1);
                         set(dbRef(database, 'expenses'), expenses.value);
-                        if (editingIndex.value === realIndex) {
-                            cancelEdit();
-                        }
                     }
                 };
 
@@ -718,14 +815,19 @@
                     filterMonth,
                     hideAmount,
                     activeSlice,
-                    editingIndex,
+                    showEditModal,
+                    editingItem,
                     filteredExpenses,
                     calcFromForeign,
                     onManualTwdInput,
                     onCardToggle,
                     addExpense,
-                    editExpense,
-                    cancelEdit,
+                    openEditModal,
+                    saveEditModal,
+                    closeEditModal,
+                    calcEditModalForeign,
+                    onManualEditTwdInput,
+                    onEditCardToggle,
                     deleteExpense,
                     checklist,
                     saveChecklist,
