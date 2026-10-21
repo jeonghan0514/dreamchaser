@@ -143,19 +143,19 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 各分類花費佔比 (高解析度清晰環狀圖) -->
+            <!-- 各分類花費佔比 (放大版圓餅圖) -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
-                <!-- 畫布容器，支援 Retina 高畫質渲染 -->
+                <!-- 畫布容器 (高解析度 Retina 適配) -->
                 <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" width="440" height="300" class="max-w-full w-[440px] h-[300px]"></canvas>
+                    <canvas id="expenseChart" width="440" height="320" class="max-w-full w-[440px] h-[320px]"></canvas>
                 </div>
-                <!-- 分類金額與百分比列表 -->
-                <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
-                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-2.5 rounded-2xl bg-[#f7faf8] border border-[#c8dcd0]">
-                        <div class="flex items-center gap-2 min-w-0">
+                <!-- 分類金額與百分比列表 (優化寬度，絕不截斷文字) -->
+                <div class="grid grid-cols-2 gap-2.5 pt-3 border-t border-[#c8dcd0] text-left text-xs">
+                    <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-3 rounded-2xl bg-[#f7faf8] border border-[#c8dcd0]">
+                        <div class="flex items-center gap-2 min-w-0 pr-1">
                             <span class="w-3 h-3 rounded-full shrink-0 inline-block border border-[#a2c4b8]" :style="{ backgroundColor: categoryColors[cat] }"></span>
                             <span class="font-bold text-[#2c4a3b] truncate">{{ cat }}</span>
                         </div>
@@ -167,22 +167,22 @@
                 </div>
             </div>
 
-            <!-- 篩選器與明細列表區塊 (優化手機排版) -->
+            <!-- 篩選器與明細列表區塊 (優化手機流暢排版) -->
             <div class="money-card p-4 space-y-3">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#c8dcd0]">
+                <div class="flex flex-col gap-2.5 pb-3 border-b border-[#c8dcd0]">
                     <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細
                     </h2>
-                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <div class="grid grid-cols-3 gap-2 w-full">
                         <!-- 分類篩選 -->
-                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none flex-1 sm:flex-none">
+                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none w-full">
                             <option value="">所有分類</option>
                             <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
                         </select>
-                        <!-- 月份篩選 (預設空值即顯示全部) -->
-                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none flex-1 sm:flex-none">
+                        <!-- 月份篩選 -->
+                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2 text-xs text-[#2c4a3b] focus:outline-none w-full">
                         <!-- 重置篩選按鈕 -->
-                        <button @click="filterCategory = ''; filterMonth = ''" class="text-xs bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] px-3 py-2 rounded-2xl font-bold flex items-center gap-1 hover:bg-[#d2e1fd] transition-all">
+                        <button @click="filterCategory = ''; filterMonth = ''" class="text-xs bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] py-2 px-2 rounded-2xl font-bold flex items-center justify-center gap-1 hover:bg-[#d2e1fd] transition-all w-full">
                             <i class="fa-solid fa-rotate-right"></i> 全部
                         </button>
                     </div>
@@ -479,7 +479,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 繪製高解析度清晰、置中的環狀圖 (適配 Retina 手機螢幕)
+                // 繪製高解析度、圓餅圖放大且引線最適化的環狀圖
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -488,9 +488,8 @@
 
                         const dpr = window.devicePixelRatio || 1;
                         const logicalWidth = 440;
-                        const logicalHeight = 300;
+                        const logicalHeight = 320;
 
-                        // 調整 canvas 實際像素以適配手機高解析度，文字和線條就會變超清晰
                         canvas.width = logicalWidth * dpr;
                         canvas.height = logicalHeight * dpr;
                         ctx.scale(dpr, dpr);
@@ -502,8 +501,8 @@
 
                         const centerX = logicalWidth / 2;
                         const centerY = logicalHeight / 2;
-                        const outerRadius = 75;
-                        const innerRadius = 40;
+                        const outerRadius = 95; // 放大圓餅圖半徑
+                        const innerRadius = 50;
 
                         if (total === 0) {
                             ctx.beginPath();
@@ -543,11 +542,11 @@
                                 if (Number(percent) > 0) {
                                     const x1 = centerX + outerRadius * Math.cos(midAngle);
                                     const y1 = centerY + outerRadius * Math.sin(midAngle);
-                                    const lineLen = 35;
+                                    const lineLen = 22; // 縮短引線，讓圖形更大更集中
                                     const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
                                     const y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
                                     const isRight = Math.cos(midAngle) >= 0;
-                                    const x3 = x2 + (isRight ? 18 : -18);
+                                    const x3 = x2 + (isRight ? 15 : -15);
                                     const y3 = y2;
 
                                     // 引線
@@ -564,7 +563,7 @@
                                     ctx.fillStyle = '#2c4a3b';
                                     ctx.textAlign = isRight ? 'left' : 'right';
                                     ctx.textBaseline = 'middle';
-                                    ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 5 : -5), y3);
+                                    ctx.fillText(`${cat} ${percent}%`, x3 + (isRight ? 4 : -4), y3);
                                 }
 
                                 startAngle = endAngle;
