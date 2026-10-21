@@ -143,16 +143,16 @@
 
         <!-- 畫面 B：圓餅圖與明細 -->
         <div v-show="currentTab === 'chart'" class="space-y-4">
-            <!-- 各分類花費佔比 (完美防打結環狀圖) -->
+            <!-- 各分類花費佔比 (完美正圓環狀圖) -->
             <div class="money-card p-5 text-center space-y-4">
                 <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-chart-pie text-[#f4d0d2]"></i> 各分類花費佔比
                 </h2>
-                <!-- 畫布容器 (Retina 高畫質適配，加大畫布寬高以提供寬敞引線空間) -->
+                <!-- 畫布容器 (正方形 380x380 確保絕對圓形) -->
                 <div class="flex justify-center overflow-x-auto py-2">
-                    <canvas id="expenseChart" width="480" height="360" class="max-w-full w-[480px] h-[360px]"></canvas>
+                    <canvas id="expenseChart" width="380" height="380" class="max-w-full w-[380px] h-[380px]"></canvas>
                 </div>
-                <!-- 分類金額與百分比列表 -->
+                <!-- 分類金額圖例 (僅顯示金額，不顯示 %) -->
                 <div class="space-y-2 pt-3 border-t border-[#c8dcd0] text-left text-xs">
                     <div v-for="(amt, cat) in categoryTotals" :key="cat" class="flex justify-between items-center p-3 rounded-2xl bg-[#f7faf8] border border-[#c8dcd0]">
                         <div class="flex items-center gap-2.5 min-w-0">
@@ -161,28 +161,27 @@
                         </div>
                         <div class="text-right shrink-0">
                             <span class="font-bold text-[#1d3557] text-sm">NT$ {{ amt.toLocaleString() }}</span>
-                            <span class="text-xs text-[#52796f] ml-1.5 font-bold">({{ getCategoryPercentage(amt) }}%)</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 篩選器與明細列表區塊 -->
+            <!-- 篩選器與明細列表區塊 (標題與篩選器在同一排、字體縮小) -->
             <div class="money-card p-4 space-y-3">
-                <div class="flex flex-col gap-3 pb-3 border-b border-[#c8dcd0]">
-                    <h2 class="font-bold text-[#2c4a3b] text-sm tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 花費明細
+                <div class="flex items-center justify-between gap-1.5 pb-3 border-b border-[#c8dcd0]">
+                    <h2 class="font-bold text-[#2c4a3b] text-xs sm:text-sm tracking-wider shrink-0 flex items-center gap-1">
+                        <i class="fa-solid fa-filter text-[#f4d0d2]"></i> 明細
                     </h2>
-                    <div class="grid grid-cols-2 gap-2 w-full">
-                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none w-full font-bold">
+                    <div class="flex items-center gap-1.5">
+                        <select v-model="filterCategory" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-1.5 text-[11px] text-[#2c4a3b] focus:outline-none font-bold">
                             <option value="">所有分類</option>
                             <option v-for="(color, cat) in categoryColors" :value="cat" :key="cat">{{ cat }}</option>
                         </select>
-                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-2xl p-2.5 text-xs text-[#2c4a3b] focus:outline-none w-full font-bold">
+                        <input type="month" v-model="filterMonth" class="bg-[#f7faf8] border border-[#c8dcd0] rounded-xl p-1.5 text-[11px] text-[#2c4a3b] focus:outline-none font-bold">
+                        <button @click="filterCategory = ''; filterMonth = ''" class="text-[11px] bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] py-1.5 px-2.5 rounded-xl font-bold flex items-center gap-1 hover:bg-[#d2e1fd] transition-all shrink-0">
+                            <i class="fa-solid fa-rotate-right"></i> 全部
+                        </button>
                     </div>
-                    <button @click="filterCategory = ''; filterMonth = ''" class="w-full text-xs bg-[#e8f0fe] border border-[#b8d0fc] text-[#1d3557] py-2.5 rounded-2xl font-bold flex items-center justify-center gap-1.5 hover:bg-[#d2e1fd] transition-all">
-                        <i class="fa-solid fa-rotate-right"></i> 顯示全部明細
-                    </button>
                 </div>
 
                 <!-- 明細清單 -->
@@ -473,7 +472,7 @@
                     return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
                 });
 
-                // 智慧防打結繪圖：自動為靠太近的標籤錯開上下高度
+                // 繪製完美正圓、引線顯示 % 數的環狀圖
                 const drawChart = () => {
                     nextTick(() => {
                         const canvas = document.getElementById('expenseChart');
@@ -481,22 +480,21 @@
                         const ctx = canvas.getContext('2d');
 
                         const dpr = window.devicePixelRatio || 1;
-                        const logicalWidth = 480;
-                        const logicalHeight = 360;
+                        const size = 380; // 正方形寬高一致，保證絕對圓形
 
-                        canvas.width = logicalWidth * dpr;
-                        canvas.height = logicalHeight * dpr;
+                        canvas.width = size * dpr;
+                        canvas.height = size * dpr;
                         ctx.scale(dpr, dpr);
 
-                        ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+                        ctx.clearRect(0, 0, size, size);
 
                         const data = categoryTotals.value;
                         const total = totalTwd.value;
 
-                        const centerX = logicalWidth / 2;
-                        const centerY = logicalHeight / 2 - 10;
-                        const outerRadius = 80;
-                        const innerRadius = 42;
+                        const centerX = size / 2;
+                        const centerY = size / 2;
+                        const outerRadius = 85;
+                        const innerRadius = 45;
 
                         if (total === 0) {
                             ctx.beginPath();
@@ -512,63 +510,6 @@
                         }
 
                         let startAngle = 0;
-                        let labels = [];
-
-                        // 收集所有大於 0% 的分類角度資訊
-                        for (let cat in data) {
-                            const val = data[cat];
-                            if (val > 0) {
-                                const sliceAngle = (val / total) * 2 * Math.PI;
-                                const endAngle = startAngle + sliceAngle;
-                                const midAngle = startAngle + sliceAngle / 2;
-                                const percent = ((val / total) * 100).toFixed(1);
-
-                                if (Number(percent) > 0) {
-                                    labels.push({ cat, percent, midAngle });
-                                }
-                                startAngle = endAngle;
-                            }
-                        }
-
-                        // 依照角度排序並防碰撞微調
-                        labels.sort((a, b) => a.midAngle - b.midAngle);
-
-                        let lastRightY = -999;
-                        let lastLeftY = -999;
-
-                        labels.forEach((item) => {
-                            const { cat, percent, midAngle } = item;
-                            const x1 = centerX + outerRadius * Math.cos(midAngle);
-                            const y1 = centerY + outerRadius * Math.sin(midAngle);
-                            
-                            const lineLen = 35;
-                            const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
-                            let y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
-
-                            const isRight = Math.cos(midAngle) >= 0;
-
-                            // 防碰撞檢測：如果右側或左側的標籤離太近，自動上下錯開
-                            if (isRight) {
-                                if (Math.abs(y2 - lastRightY) < 22) {
-                                    y2 = lastRightY + 24;
-                                }
-                                lastRightY = y2;
-                            } else {
-                                if (Math.abs(y2 - lastLeftY) < 22) {
-                                    y2 = lastLeftY + 24;
-                                }
-                                lastLeftY = y2;
-                            }
-
-                            const x3 = x2 + (isRight ? 22 : -22);
-                            const y3 = y2;
-
-                            // 繪製扇形
-                            // (此處在迴圈中重繪扇形以確保圖層正確)
-                        });
-
-                        // 實際繪製扇形與引線
-                        startAngle = 0;
                         let drawnLabels = [];
                         for (let cat in data) {
                             const val = data[cat];
@@ -596,7 +537,7 @@
                             }
                         }
 
-                        // 繪製引線與文字
+                        // 繪製引線與 % 數文字（防碰撞錯開）
                         let rightYList = [];
                         let leftYList = [];
 
@@ -605,31 +546,31 @@
                             const x1 = centerX + outerRadius * Math.cos(midAngle);
                             const y1 = centerY + outerRadius * Math.sin(midAngle);
                             
-                            const lineLen = 35;
+                            const lineLen = 30;
                             const x2 = centerX + (outerRadius + lineLen) * Math.cos(midAngle);
                             let y2 = centerY + (outerRadius + lineLen) * Math.sin(midAngle);
                             const isRight = Math.cos(midAngle) >= 0;
 
                             if (isRight) {
                                 for (let py of rightYList) {
-                                    if (Math.abs(y2 - py) < 24) {
-                                        y2 = py + 26;
+                                    if (Math.abs(y2 - py) < 22) {
+                                        y2 = py + 24;
                                     }
                                 }
                                 rightYList.push(y2);
                             } else {
                                 for (let py of leftYList) {
-                                    if (Math.abs(y2 - py) < 24) {
-                                        y2 = py + 26;
+                                    if (Math.abs(y2 - py) < 22) {
+                                        y2 = py + 24;
                                     }
                                 }
                                 leftYList.push(y2);
                             }
 
-                            const x3 = x2 + (isRight ? 20 : -20);
+                            const x3 = x2 + (isRight ? 18 : -18);
                             const y3 = y2;
 
-                            // 繪製折線引線
+                            // 繪製引線
                             ctx.beginPath();
                             ctx.moveTo(x1, y1);
                             ctx.lineTo(x2, y2);
@@ -638,7 +579,7 @@
                             ctx.strokeStyle = '#729c85';
                             ctx.stroke();
 
-                            // 繪製高畫質清晰文字
+                            // 繪製高畫質引線文字（僅顯示 % 數）
                             ctx.font = 'bold 12px Noto Sans TC';
                             ctx.fillStyle = '#2c4a3b';
                             ctx.textAlign = isRight ? 'left' : 'right';
