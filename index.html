@@ -101,15 +101,18 @@
 
         <!-- 主程式內容 (登入後顯示) -->
         <div v-else>
-            <!-- 頂部標題與登出按鈕 -->
+            <!-- 頂部標題與右上角使用者備註＋登出按鈕 -->
             <header class="text-center py-6 relative">
-                <div class="absolute right-0 top-6">
+                <div class="absolute right-0 top-6 flex items-center gap-2">
+                    <span class="text-[11px] text-[#52796f] font-bold bg-[#e8f0fe] px-2.5 py-1.5 rounded-full border border-[#b8d0fc]">
+                        👤 {{ currentUser }}
+                    </span>
                     <button @click="handleLogout" class="text-[11px] bg-white border border-[#c8dcd0] text-[#52796f] hover:text-[#2c4a3b] px-3 py-1.5 rounded-full font-bold shadow-sm transition-all flex items-center gap-1">
                         <i class="fa-solid fa-right-from-bracket"></i> 登出
                     </button>
                 </div>
-                <h1 class="text-2xl font-bold tracking-wider text-[#2c4a3b] flex items-center justify-center gap-2">
-                    <span>💎</span> 追夢之旅 <span class="text-[#729c85] font-light">| {{ currentUser }}的帳本</span>
+                <h1 class="text-2xl font-bold tracking-wider text-[#2c4a3b] flex items-center justify-center gap-2 mt-2 sm:mt-0">
+                    <span>💎</span> 追夢之旅 <span class="text-[#729c85] font-light">| money</span>
                 </h1>
                 <p class="text-xs tracking-widest text-[#729c85] uppercase mt-1 font-medium">Concert & Trip Expense Manager</p>
             </header>
@@ -417,14 +420,13 @@
                 const isRegisterMode = ref(false);
                 const authInput = ref({ username: '', password: '' });
 
-                // 自動初始化 lele 帳號（如果資料庫還沒有 lele，直接幫妳建好並綁定妳原本的舊資料！）
+                // 自動初始化 lele 帳號並綁定舊資料
                 const checkAndInitLeleAccount = async () => {
                     const leleUserRef = dbRef(database, `users/lele`);
                     const snapshot = await get(leleUserRef);
                     if (!snapshot.exists()) {
                         await set(leleUserRef, { password: 'jeonghan0514' });
                         
-                        // 把原本根目錄的舊資料自動複製一份過來給 lele 專屬路徑，確保舊資料完全不遺失！
                         const oldExp = await get(dbRef(database, 'expenses'));
                         if (oldExp.exists()) await set(dbRef(database, `user_data/lele/expenses`), oldExp.val());
 
@@ -437,7 +439,6 @@
                 };
                 checkAndInitLeleAccount();
 
-                // 註冊新帳號
                 const handleRegister = async () => {
                     const uname = authInput.value.username.trim();
                     const pwd = authInput.value.password.trim();
@@ -467,7 +468,6 @@
                     alert(`註冊成功！歡迎加入，${uname} ✨`);
                 };
 
-                // 登入帳號
                 const handleLogin = async () => {
                     const uname = authInput.value.username.trim();
                     const pwd = authInput.value.password.trim();
