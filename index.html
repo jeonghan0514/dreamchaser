@@ -101,9 +101,10 @@
 
         <!-- 主程式內容 (登入後顯示) -->
         <div v-else>
-            <!-- 頂部標題與右上角使用者備註＋登出按鈕 -->
-            <header class="text-center py-6 relative">
-                <div class="absolute right-0 top-6 flex items-center gap-2">
+            <!-- 頂部標題與響應式使用者備註＋登出按鈕 -->
+            <header class="py-5 relative">
+                <!-- 手機版靠右排版 / 電腦版絕對定位右上角 -->
+                <div class="flex justify-end items-center gap-2 mb-3 md:absolute md:right-0 md:top-5 md:mb-0">
                     <span class="text-[11px] text-[#52796f] font-bold bg-[#e8f0fe] px-2.5 py-1.5 rounded-full border border-[#b8d0fc]">
                         👤 {{ currentUser }}
                     </span>
@@ -111,10 +112,12 @@
                         <i class="fa-solid fa-right-from-bracket"></i> 登出
                     </button>
                 </div>
-                <h1 class="text-2xl font-bold tracking-wider text-[#2c4a3b] flex items-center justify-center gap-2 mt-2 sm:mt-0">
-                    <span>💎</span> 追夢之旅 <span class="text-[#729c85] font-light">| money</span>
-                </h1>
-                <p class="text-xs tracking-widest text-[#729c85] uppercase mt-1 font-medium">Concert & Trip Expense Manager</p>
+                <div class="text-center">
+                    <h1 class="text-2xl font-bold tracking-wider text-[#2c4a3b] flex items-center justify-center gap-2">
+                        <span>💎</span> 追夢之旅 <span class="text-[#729c85] font-light">| money</span>
+                    </h1>
+                    <p class="text-xs tracking-widest text-[#729c85] uppercase mt-1 font-medium">Concert & Trip Expense Manager</p>
+                </div>
             </header>
 
             <!-- 導覽頁籤 -->
