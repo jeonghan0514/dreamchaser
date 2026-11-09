@@ -423,25 +423,6 @@
                 const isRegisterMode = ref(false);
                 const authInput = ref({ username: '', password: '' });
 
-                // 自動初始化 lele 帳號並綁定舊資料
-                const checkAndInitLeleAccount = async () => {
-                    const leleUserRef = dbRef(database, `users/lele`);
-                    const snapshot = await get(leleUserRef);
-                    if (!snapshot.exists()) {
-                        await set(leleUserRef, { password: 'jeonghan0514' });
-                        
-                        const oldExp = await get(dbRef(database, 'expenses'));
-                        if (oldExp.exists()) await set(dbRef(database, `user_data/lele/expenses`), oldExp.val());
-
-                        const oldCheck = await get(dbRef(database, 'checklist'));
-                        if (oldCheck.exists()) await set(dbRef(database, `user_data/lele/checklist`), oldCheck.val());
-
-                        const oldFlight = await get(dbRef(database, 'flightInfo'));
-                        if (oldFlight.exists()) await set(dbRef(database, `user_data/lele/flightInfo`), oldFlight.val());
-                    }
-                };
-                checkAndInitLeleAccount();
-
                 const handleRegister = async () => {
                     const uname = authInput.value.username.trim();
                     const pwd = authInput.value.password.trim();
@@ -548,6 +529,86 @@
 
                 const getUserDataPath = (subPath) => `user_data/${currentUser.value}/${subPath}`;
 
+                // 妳剛剛提供的全新乾淨行李清單版本
+                const exactChecklist = {                     
+                    '🩷 Ready To Love': [
+                        { name: 'eSIM / 網卡', checked: false },
+                        { name: '旅遊不便+平安險', checked: false },
+                        { name: '換幣', checked: false },
+                        { name: 'Visit Japan Web (日本)', checked: false }
+                    ],
+                    '👜 隨身包與重要證件': [
+                        { name: '★錢包 (台幣/外幣/信用卡/交通卡)', checked: false },
+                        { name: '★護照', checked: false },
+                        { name: '★手機 (含背繩)', checked: false },
+                        { name: '★行動電源', checked: false },
+                        { name: '筆、簽字筆', checked: false },
+                        { name: '雨傘', checked: false },
+                        { name: '衛生紙', checked: false }
+                    ],
+                    '💎 追星女的生存法則': [
+                        { name: '★日本FC / 韓國WVS會員卡', checked: false },
+                        { name: '★克拉棒', checked: false },
+                        { name: '★電池 (克拉棒)', checked: false },
+                        { name: '★速效藍莓', checked: false },
+                        { name: '娃', checked: false },
+                        { name: '小卡', checked: false },
+                        { name: '卡膜、小卡盒子', checked: false },
+                        { name: '飯撒板板 / 素描本', checked: false },
+                        { name: '神席御守', checked: false }
+                    ],
+                    '🧸 拒當裸娃': [
+                        { name: '上身', checked: false },
+                        { name: '下著', checked: false },
+                        { name: '內衣/褲', checked: false },
+                        { name: '襪子', checked: false },
+                        { name: '睡衣/褲', checked: false },
+                        { name: '飾品', checked: false }
+                    ],
+                    '🫧 髒污掰掰': [
+                        { name: '牙刷/膏', checked: false },
+                        { name: '洗面乳', checked: false },
+                        { name: '潤髮乳', checked: false },
+                        { name: '卸妝水/乳/霜/油', checked: false },
+                        { name: '眼唇卸妝', checked: false },
+                        { name: '化妝棉', checked: false },
+                        { name: '棉花棒', checked: false },
+                        { name: '牙線', checked: false }
+                    ],
+                    '💄 漂亮寶貝': [
+                        { name: '臉部保濕', checked: false },
+                        { name: '眼霜', checked: false },
+                        { name: '護髮乳 (吹髮前)', checked: false },
+                        { name: '髮油', checked: false },
+                        { name: '面膜', checked: false },                        
+                        { name: '鯊魚夾', checked: false },
+                        { name: '髮捲 (瀏海)', checked: false },
+                        { name: '梳子', checked: false },
+                        { name: '粉餅/刷', checked: false },
+                        { name: '遮瑕/刷', checked: false },
+                        { name: '腮紅/刷', checked: false },
+                        { name: '眼影/刷', checked: false },
+                        { name: '睫毛膏/夾', checked: false },
+                        { name: '眼線液', checked: false },
+                        { name: '眉筆', checked: false },
+                        { name: '唇膏/護唇膏', checked: false },
+                        { name: '定妝噴霧', checked: false },
+                        { name: '香水', checked: false }
+                    ],
+                    '⚡ 哩哩摳摳': [
+                        { name: '★充電線', checked: false },
+                        { name: '★眼鏡/眼鏡盒', checked: false },
+                        { name: '★隱形眼鏡', checked: false },
+                        { name: '★轉接頭 (韓國)', checked: false },
+                        { name: '行李袋', checked: false },
+                        { name: '常備藥品', checked: false },
+                        { name: '護墊 / 衛生棉 / 棉條', checked: false },
+                        { name: '口罩', checked: false }
+                    ]
+                };
+
+                const checklist = ref(exactChecklist);
+
                 const initDatabaseListeners = () => {
                     if (!currentUser.value) return;
 
@@ -558,14 +619,13 @@
                         drawChart();
                     });
 
+                    // 強制將遠端清單覆蓋成妳剛剛提供的版本，清除所有舊雜質
                     const checkRef = dbRef(database, getUserDataPath('checklist'));
+                    set(checkRef, exactChecklist);
                     onValue(checkRef, (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            checklist.value = Object.assign({}, defaultChecklist, data);
-                        } else {
-                            set(checkRef, defaultChecklist);
-                            checklist.value = defaultChecklist;
+                            checklist.value = data;
                         }
                     });
 
@@ -645,85 +705,6 @@
                         }
                     }
                 };
-
-                const defaultChecklist = {                     
-                    '🩷 Ready To Love': [
-                        { name: 'eSIM / 網卡', checked: false },
-                        { name: '旅遊不便+平安險', checked: false },
-                        { name: '換幣', checked: false },
-                        { name: 'Visit Japan Web (日本)', checked: false }
-                    ],
-                    '👜 隨身包與重要證件': [
-                        { name: '★錢包 (台幣/外幣/信用卡/交通卡)', checked: false },
-                        { name: '★護照', checked: false },
-                        { name: '★手機 (含背繩)', checked: false },
-                        { name: '★行動電源', checked: false },
-                        { name: '筆、簽字筆', checked: false },
-                        { name: '雨傘', checked: false },
-                        { name: '衛生紙', checked: false }
-                    ],
-                    '💎 追星女的生存法則': [
-                        { name: '★日本FC / 韓國WVS會員卡', checked: false },
-                        { name: '★克拉棒', checked: false },
-                        { name: '★電池 (克拉棒)', checked: false },
-                        { name: '★速效藍莓', checked: false },
-                        { name: '娃', checked: false },
-                        { name: '小卡', checked: false },
-                        { name: '卡膜、小卡盒子', checked: false },
-                        { name: '飯撒板板 / 素描本', checked: false },
-                        { name: '神席御守', checked: false }
-                    ],
-                    '🧸 拒當裸娃': [
-                        { name: '上身', checked: false },
-                        { name: '下著', checked: false },
-                        { name: '內衣/褲', checked: false },
-                        { name: '襪子', checked: false },
-                        { name: '睡衣/褲', checked: false },
-                        { name: '飾品', checked: false }
-                    ],
-                    '🫧 髒污掰掰': [
-                        { name: '牙刷/膏', checked: false },
-                        { name: '洗面乳', checked: false },
-                        { name: '潤髮乳', checked: false },
-                        { name: '卸妝水/乳/霜/油', checked: false },
-                        { name: '眼唇卸妝', checked: false },
-                        { name: '化妝棉', checked: false },
-                        { name: '棉花棒', checked: false },
-                        { name: '牙線', checked: false }
-                    ],
-                    '💄 漂亮寶貝': [
-                        { name: '臉部保濕', checked: false },
-                        { name: '眼霜', checked: false },
-                        { name: '護髮乳 (吹髮前)', checked: false },
-                        { name: '髮油', checked: false },
-                        { name: '面膜', checked: false },                        
-                        { name: '鯊魚夾', checked: false },
-                        { name: '髮捲 (瀏海)', checked: false },
-                        { name: '梳子', checked: false },
-                        { name: '粉餅/刷', checked: false },
-                        { name: '遮瑕/刷', checked: false },
-                        { name: '腮紅/刷', checked: false },
-                        { name: '眼影/刷', checked: false },
-                        { name: '睫毛膏/夾', checked: false },
-                        { name: '眼線液', checked: false },
-                        { name: '眉筆', checked: false },
-                        { name: '唇膏/護唇膏', checked: false },
-                        { name: '定妝噴霧', checked: false },
-                        { name: '香水', checked: false }
-                    ],
-                    '⚡ 哩哩摳摳': [
-                        { name: '★充電線', checked: false },
-                        { name: '★眼鏡/眼鏡盒', checked: false },
-                        { name: '★隱形眼鏡', checked: false },
-                        { name: '★轉接頭 (韓國)', checked: false },
-                        { name: '行李袋', checked: false },
-                        { name: '常備藥品', checked: false },
-                        { name: '護墊 / 衛生棉 / 棉條', checked: false },
-                        { name: '口罩', checked: false }
-                    ]
-                };
-
-                const checklist = ref(defaultChecklist);
 
                 const totalTwd = computed(() => {
                     return expenses.value.reduce((sum, item) => sum + (Number(item.twdAmt) || 0), 0);
