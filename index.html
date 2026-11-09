@@ -529,7 +529,7 @@
 
                 const getUserDataPath = (subPath) => `user_data/${currentUser.value}/${subPath}`;
 
-                // 妳剛剛提供的全新乾淨行李清單版本
+                // 妳指定的嚴格精準順序
                 const exactChecklist = {                     
                     '🩷 Ready To Love': [
                         { name: 'eSIM / 網卡', checked: false },
@@ -619,13 +619,32 @@
                         drawChart();
                     });
 
-                    // 強制將遠端清單覆蓋成妳剛剛提供的版本，清除所有舊雜質
+                    // 確保順序與內容完整以妳指定的為準
                     const checkRef = dbRef(database, getUserDataPath('checklist'));
-                    set(checkRef, exactChecklist);
+                    get(checkRef).then((snapshot) => {
+                        const existingData = snapshot.val();
+                        if (!existingData) {
+                            set(checkRef, exactChecklist);
+                        }
+                    });
+
                     onValue(checkRef, (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            checklist.value = data;
+                            // 按照 exactChecklist 的順序重新組合物件，確保渲染順序不跑掉
+                            const orderedChecklist = {};
+                            Object.keys(exactChecklist).forEach(groupKey => {
+                                if (data[groupKey]) {
+                                    // 保留使用者原本勾選的狀態 (checked)
+                                    orderedChecklist[groupKey] = exactChecklist[groupKey].map(newItem => {
+                                        const found = (data[groupKey] || []).find(oldItem => oldItem.name === newItem.name);
+                                        return found ? { ...newItem, checked: found.checked } : newItem;
+                                    });
+                                } else {
+                                    orderedChecklist[groupKey] = exactChecklist[groupKey];
+                                }
+                            });
+                            checklist.value = orderedChecklist;
                         }
                     });
 
